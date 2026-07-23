@@ -41,6 +41,7 @@ export class ReproductorMusical {
             this.botonReproducir.innerHTML = '<i class="fas fa-pause"></i>';
             this.disco.classList.add('playing');
             this.estaReproduciendo = true;
+            this.iniciarAnimacionTiempo();
         }).catch(error => {
             console.log("No se pudo reproducir automáticamente:", error);
         });
@@ -51,6 +52,26 @@ export class ReproductorMusical {
         this.botonReproducir.innerHTML = '<i class="fas fa-play"></i>';
         this.disco.classList.remove('playing');
         this.estaReproduciendo = false;
+        this.detenerAnimacionTiempo();
+    }
+
+    iniciarAnimacionTiempo() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+        }
+        const animar = () => {
+            if (this.estaReproduciendo) {
+                this.actualizarTiempo();
+                this.animationFrameId = requestAnimationFrame(animar);
+            }
+        };
+        this.animationFrameId = requestAnimationFrame(animar);
+    }
+
+    detenerAnimacionTiempo() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+        }
     }
 
     alternarReproduccion() {
@@ -105,7 +126,6 @@ export class ReproductorMusical {
         this.botonAnterior.addEventListener('click', () => this.cancionAnterior());
         
         // Eventos de la barra de tiempo
-        this.audioElemento.addEventListener('timeupdate', () => this.actualizarTiempo());
         this.audioElemento.addEventListener('loadedmetadata', () => {
             if (this.durationTimeLabel) {
                 this.durationTimeLabel.textContent = this.formatearTiempo(this.audioElemento.duration);
