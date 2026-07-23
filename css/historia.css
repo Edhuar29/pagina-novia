@@ -105,7 +105,7 @@
 /* Reasons Section */
 .reasons-section {
     padding: 80px 20px;
-    background: linear-gradient(to bottom, var(--bg-color), #fef0f4);
+    background: linear-gradient(to bottom, var(--bg-color), var(--bg-gradient-light));
 }
 
 .reasons-grid {

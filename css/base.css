@@ -11,6 +11,7 @@
     --glass-shadow: 0 8px 32px 0 rgba(193, 161, 172, 0.2);
     --theme-btn-bg: #fff;
     --theme-btn-color: #4a4a4a;
+    --bg-gradient-light: #fef0f4;
 }
 
 [data-theme="dark"] {
@@ -26,6 +27,7 @@
     --glass-shadow: 0 8px 32px 0 rgba(255, 0, 127, 0.25);
     --theme-btn-bg: #1a202c;
     --theme-btn-color: #fbd38d; /* Color luna dorada */
+    --bg-gradient-light: transparent;
 }
 
 * {

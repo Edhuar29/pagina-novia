@@ -1,7 +1,7 @@
 /* --- Sobre Interactivo --- */
 .sobre-section {
     padding: 80px 20px;
-    background: linear-gradient(to bottom, #fef0f4, var(--bg-color));
+    background: linear-gradient(to bottom, var(--bg-gradient-light), var(--bg-color));
     text-align: center;
 }
 
