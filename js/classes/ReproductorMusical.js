@@ -5,7 +5,6 @@ export class ReproductorMusical {
         this.botonReproducir = document.getElementById('playBtn');
         this.botonAnterior = document.getElementById('prevBtn');
         this.botonSiguiente = document.getElementById('nextBtn');
-        this.volumeSlider = document.getElementById('volumeSlider');
         this.timeSlider = document.getElementById('timeSlider');
         this.currentTimeLabel = document.getElementById('currentTime');
         this.durationTimeLabel = document.getElementById('durationTime');
@@ -30,9 +29,6 @@ export class ReproductorMusical {
 
     configurarReproductor() {
         this.audioElemento.volume = 0.4;
-        if (this.volumeSlider) {
-            this.volumeSlider.value = this.audioElemento.volume;
-        }
         // Cargar la primera canción al iniciar la página para que el botón de Play funcione de inmediato
         this.cargarCancion(this.indiceCancionActual);
     }
@@ -110,12 +106,6 @@ export class ReproductorMusical {
         this.botonReproducir.addEventListener('click', () => this.alternarReproduccion());
         this.botonSiguiente.addEventListener('click', () => this.siguienteCancion());
         this.botonAnterior.addEventListener('click', () => this.cancionAnterior());
-        
-        if (this.volumeSlider) {
-            this.volumeSlider.addEventListener('input', (e) => {
-                this.audioElemento.volume = e.target.value;
-            });
-        }
         
         // Eventos de la barra de tiempo
         this.audioElemento.addEventListener('timeupdate', () => this.actualizarTiempo());

@@ -11,7 +11,7 @@
     flex-direction: column;
     gap: 5px;
     z-index: 9999;
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--glass-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-radius: 20px;
@@ -91,7 +91,7 @@
 }
 
 .player-controls button:hover {
-    color: #db7093;
+    color: var(--primary-color);
 }
 
 .play-btn-large {

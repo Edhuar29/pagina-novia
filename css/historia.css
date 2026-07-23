@@ -245,9 +245,10 @@
     min-width: 250px;
     height: 300px;
     padding: 15px 15px 50px 15px;
-    background: #fff;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 2px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    box-shadow: var(--glass-shadow);
     scroll-snap-align: center;
     display: flex;
     flex-direction: column;
