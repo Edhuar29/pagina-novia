@@ -1,8 +1,9 @@
 /* --- Sobre Interactivo --- */
 .sobre-section {
     padding: 80px 20px;
-    background: linear-gradient(to bottom, var(--bg-gradient-light), var(--bg-color));
+    background: transparent;
     text-align: center;
+    min-height: 80vh;
 }
 
 .sobre-container {

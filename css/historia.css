@@ -105,7 +105,7 @@
 /* Reasons Section */
 .reasons-section {
     padding: 80px 20px;
-    background: linear-gradient(to bottom, var(--bg-color), var(--bg-gradient-light));
+    background: transparent;
 }
 
 .reasons-grid {
@@ -171,7 +171,7 @@
 /* --- Contador Section --- */
 .contador-section {
     padding: 80px 20px;
-    background-color: var(--bg-color);
+    background: transparent;
 }
 
 .contador-container {
