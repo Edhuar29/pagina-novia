@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para Mi Amor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Dark Mode">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <!-- Contenedor Principal para Vistas -->
+    <main class="app-container">
+        <!-- Floating Music Player -->
+        <div class="music-player glass">
+            <div class="player-top-row">
+                <div class="player-info">
+                    <div class="disk" id="disk"><i class="fas fa-music"></i></div>
+                    <div class="track-details">
+                        <span id="songTitle">Cargando...</span>
+                        <span class="artist">Feid</span>
+                    </div>
+                </div>
+                
+                <div class="player-controls">
+                    <button id="prevBtn"><i class="fas fa-backward"></i></button>
+                    <button id="playBtn" class="play-btn-large"><i class="fas fa-play"></i></button>
+                    <button id="nextBtn"><i class="fas fa-forward"></i></button>
+                </div>
+            </div>
+            
+            <!-- Barra de tiempo (Progreso) -->
+            <div class="progress-container">
+                <span id="currentTime">0:00</span>
+                <input type="range" id="timeSlider" min="0" max="100" value="0">
+                <span id="durationTime">0:00</span>
+            </div>
+
+            <div class="volume-container">
+                <i class="fas fa-volume-down" style="font-size: 0.8rem; color: var(--text-light);"></i>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.4">
+                <i class="fas fa-volume-up" style="font-size: 0.8rem; color: var(--text-light);"></i>
+            </div>
+            <audio id="bgMusic">
+                <source id="audioSource" src="" type="audio/mpeg">
+            </audio>
+        </div>
+
+        <!-- VISTA: INICIO -->
+        <div id="vista-inicio" class="vista active">
+            <section class="inicio-section">
+                <div class="corazon-latido">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h1 class="titulo-principal">Para mi persona favorita</h1>
+                
+                <div class="frase-dia glass">
+                    <h3>Para mi gordita</h3>
+                    <p id="frase-aleatoria">"Eres la casualidad más bonita que llegó a mi vida."</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- VISTA: HISTORIA -->
+        <div id="vista-historia" class="vista" style="display: none;">
+            <section class="contador-section" id="tiempo">
+                <h2 class="section-title">Tiempo Juntos</h2>
+                <p class="section-subtitle">Cada segundo a tu lado es un regalo</p>
+                <div class="contador-container">
+                    <div class="contador-esfera glass">
+                        <span id="contador-dias">0</span>
+                        <p>Días</p>
+                    </div>
+                    <div class="contador-esfera glass">
+                        <span id="contador-horas">0</span>
+                        <p>Horas</p>
+                    </div>
+                    <div class="contador-esfera glass">
+                        <span id="contador-minutos">0</span>
+                        <p>Minutos</p>
+                    </div>
+                    <div class="contador-esfera glass">
+                        <span id="contador-segundos">0</span>
+                        <p>Segundos</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="timeline-section" id="historia">
+                <h2 class="section-title">Nuestros Momentos</h2>
+                <div class="carrusel-fotos">
+                    <div class="polaroid glass">
+                        <img src="assets/botes.jpg" alt="Foto 1">
+                        <p>Dìa de novios ✨</p>
+                    </div>
+                    <div class="polaroid glass">
+                        <img src="assets/vosandes.jpg" alt="Foto 2">
+                        <p>cita al doctor  ☕</p>
+                    </div>
+                    <div class="polaroid glass">
+                        <img src="assets/epn.jpg" alt="Foto 3">
+                        <p>EPN</p>
+                    </div>
+                    <div class="polaroid glass">
+                        <img src="assets/biblioteca.jpg" alt="Foto 4">
+                        <p>clases virtuales</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- VISTA: SORPRESA -->
+        <div id="vista-sorpresa" class="vista" style="display: none;">
+            <section class="sobre-section" id="sorpresa">
+                <h2 class="section-title">Tengo un antojito para ti...</h2>
+                <p class="section-subtitle">Haz clic en el sobre y raspa la tarjeta gris para descubrir tu premio sorpresa 🎁</p>
+                
+                <div class="sobre-container">
+                    <div class="sobre" id="sobre-interactivo">
+                        <div class="sobre-tapa"></div>
+                        <div class="sobre-cuerpo">
+                            <i class="fas fa-gift corazon-sello"></i>
+                        </div>
+                        <div class="boleto">
+                            <h3>¡Premio Sorpresa!</h3>
+                            <canvas id="scratch-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="instruccion-raspar"><i class="fas fa-hand-pointer"></i> ¡Tócalo para abrir!</p>
+            </section>
+        </div>
+
+        <!-- VISTA: JUEGOS -->
+        <div id="vista-juegos" class="vista" style="display: none;">
+            <section class="juegos-section">
+                <h2 class="section-title">Sala de Juegos</h2>
+                <p class="section-subtitle">Divirtámonos un rato 🎮</p>
+                
+                <div class="juegos-menu">
+                    <div class="juego-card arcade-card" id="btn-juego-besos">
+                        <i class="fas fa-kiss-wink-heart"></i>
+                        <h3>Atrapa Besos</h3>
+                    </div>
+                    <div class="juego-card arcade-card" id="btn-juego-flappy">
+                        <i class="fas fa-heartbeat"></i>
+                        <h3>Flappy Corazón</h3>
+                    </div>
+                    <div class="juego-card arcade-card" id="btn-juego-tic">
+                        <i class="fas fa-border-all"></i>
+                        <h3>Tres en Raya</h3>
+                    </div>
+                </div>
+
+                <!-- Contenedores de juegos (ocultos por defecto) -->
+                <div id="juego-contenedor-besos" class="juego-pantalla glass" style="display: none;">
+                    <h3>Atrapa los Besos 💋</h3>
+                    <p class="juego-instrucciones">Mueve la cesta con el dedo o el mouse para atrapar corazones. Tienes 30 segundos.</p>
+                    <button class="btn-jugar" id="start-besos">Jugar</button>
+                    <div class="puntuacion">Puntos: <span id="puntos-besos">0</span> | Tiempo: <span id="tiempo-besos">30</span></div>
+                    <div id="canvas-besos-container" style="position:relative; width: 100%; height: 300px; background:#fff; overflow:hidden; border-radius:10px; margin-top:10px; display:none;">
+                    </div>
+                    <button class="btn-cerrar-juego" style="margin-top:15px;">Cerrar Juego</button>
+                </div>
+
+                <div id="juego-contenedor-flappy" class="juego-pantalla glass" style="display: none;">
+                    <h3>Flappy Corazón 💖</h3>
+                    <p class="juego-instrucciones">Toca la pantalla para volar. ¡No choques con las tuberías!</p>
+                    <button class="btn-jugar" id="start-flappy">Jugar</button>
+                    <div class="puntuacion">Puntos: <span id="puntos-flappy">0</span></div>
+                    <canvas id="canvas-flappy" width="300" height="400" style="background:#87CEEB; display:block; margin: 10px auto; border-radius:10px; display:none;"></canvas>
+                    <button class="btn-cerrar-juego" style="margin-top:15px;">Cerrar Juego</button>
+                </div>
+
+                <div id="juego-contenedor-tic" class="juego-pantalla glass" style="display: none;">
+                    <h3>Tic-Tac-Toe Romántico</h3>
+                    <p class="juego-instrucciones">El primero en alinear 3 gana.</p>
+                    <div class="turno-indicador">Turno de: <span id="turno-actual">💚</span></div>
+                    <div class="tic-tablero">
+                    </div>
+                    <button class="btn-jugar" id="reset-tic" style="margin-top:15px;">Reiniciar</button>
+                    <button class="btn-cerrar-juego" style="margin-top:15px;">Cerrar Juego</button>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Menú de Navegación Inferior -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-btn active" data-target="vista-inicio">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="#" class="nav-btn" data-target="vista-historia">
+            <i class="fas fa-history"></i>
+            <span>Historia</span>
+        </a>
+        <a href="#" class="nav-btn" data-target="vista-sorpresa">
+            <i class="fas fa-gift"></i>
+            <span>Sorpresa</span>
+        </a>
+        <a href="#" class="nav-btn" data-target="vista-juegos">
+            <i class="fas fa-gamepad"></i>
+            <span>Juegos</span>
+        </a>
+    </nav>
+
+    <!-- Scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

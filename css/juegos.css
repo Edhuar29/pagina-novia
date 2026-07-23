@@ -1,0 +1,133 @@
+
+/* --- Juegos Section --- */
+.juegos-section {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.juegos-menu {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+
+.juego-card {
+    width: 120px;
+    padding: 20px 10px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.juego-card:hover {
+    transform: translateY(-5px);
+}
+
+.juego-card i {
+    font-size: 2.5rem;
+    color: var(--accent-color);
+    margin-bottom: 10px;
+}
+
+.juego-card h3 {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.juego-pantalla {
+    margin-top: 30px;
+    padding: 20px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.juego-instrucciones {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+}
+
+.btn-jugar, .btn-cerrar-juego {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    transition: background 0.3s;
+    margin: 5px;
+}
+
+.btn-jugar:hover, .btn-cerrar-juego:hover {
+    background: #c7607d;
+}
+.btn-cerrar-juego {
+    background: #bbb;
+}
+
+/* Tic Tac Toe Grid */
+.tic-tablero {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 250px;
+    margin: 20px auto;
+}
+
+.tic-celda {
+    background: rgba(255,255,255,0.7);
+    aspect-ratio: 1;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.tic-celda:hover {
+    background: rgba(255,255,255,1);
+}
+/* Juegos: Arcade */
+.arcade-card {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--bg-color), var(--bg-color)) padding-box,
+                linear-gradient(45deg, #ff7eb3, #ff758c) border-box;
+    box-shadow: 0 0 15px rgba(255, 118, 140, 0.3);
+}
+
+.arcade-card i {
+    text-shadow: 0 0 10px rgba(255, 118, 140, 0.5);
+}
+
+/* Animaciones Tic-Tac-Toe */
+.tic-celda.ganadora {
+    animation: latidoGanador 0.8s infinite alternate;
+    background-color: rgba(255, 118, 140, 0.2);
+    border-color: #ff768c;
+}
+
+@keyframes latidoGanador {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); box-shadow: 0 0 15px rgba(255,118,140,0.5); }
+}
+
+.corazon-flotante {
+    position: absolute;
+    top: -20px;
+    font-size: 1.5rem;
+    animation: caerYDesvanecer linear forwards;
+    z-index: 100;
+    pointer-events: none;
+}
+
+@keyframes caerYDesvanecer {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(300px) rotate(360deg); opacity: 0; }
+}    
