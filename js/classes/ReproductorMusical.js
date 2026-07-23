@@ -17,10 +17,7 @@ export class ReproductorMusical {
 
         // Lista de canciones
         this.listaDeCanciones = [
-            { titulo: "LUNA - Feid 💚", url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/58/4b/44/584b4459-7c48-2b6e-7dcb-bf44cef13bc2/mzaf_5424672737252697611.plus.aac.p.m4a" },
-            { titulo: "SE LO JURO MOR - Feid 💚", url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c3/f6/84/c3f68436-334a-36b7-2238-e3ba02ec31b3/mzaf_312991539079856006.plus.aac.p.m4a" },
-            { titulo: "Ferxxo 100 - Feid 💚", url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bb/47/cf/bb47cf4f-7446-cca3-7182-c3d06f2e02fd/mzaf_384128286720669062.plus.aac.p.m4a" },
-            { titulo: "Ven Pa Casa - Feid 💚", url: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/be/5d/a8/be5da8db-0ec8-44fe-fd6e-98fa993c8fd6/mzaf_12701148506499440511.plus.aac.p.m4a" }
+            { titulo: "Ojitos Lindos", url: "assets/Ojitos Lindos.mp3" }
         ];
 
         this.configurarReproductor();
