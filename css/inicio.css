@@ -13,7 +13,7 @@
 
 .corazon-latido {
     font-size: 6rem;
-    color: #ff4d6d;
+    color: var(--primary-color);
     animation: latido 1.5s infinite;
     margin-bottom: 20px;
     text-shadow: 0 0 20px rgba(255, 77, 109, 0.4); /* text-shadow is much faster than filter: drop-shadow */

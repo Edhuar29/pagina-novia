@@ -63,10 +63,10 @@
 }
 
 .btn-jugar:hover, .btn-cerrar-juego:hover {
-    background: #c7607d;
+    background: var(--primary-color);
 }
 .btn-cerrar-juego {
-    background: #bbb;
+    background: var(--text-light);
 }
 
 /* Tic Tac Toe Grid */
@@ -98,24 +98,24 @@
 .arcade-card {
     border: 2px solid transparent;
     background: linear-gradient(var(--bg-color), var(--bg-color)) padding-box,
-                linear-gradient(45deg, #ff7eb3, #ff758c) border-box;
-    box-shadow: 0 0 15px rgba(255, 118, 140, 0.3);
+                linear-gradient(45deg, var(--primary-color), var(--secondary-color)) border-box;
+    box-shadow: 0 0 15px var(--primary-color);
 }
 
 .arcade-card i {
-    text-shadow: 0 0 10px rgba(255, 118, 140, 0.5);
+    text-shadow: 0 0 10px var(--primary-color);
 }
 
 /* Animaciones Tic-Tac-Toe */
 .tic-celda.ganadora {
     animation: latidoGanador 0.8s infinite alternate;
-    background-color: rgba(255, 118, 140, 0.2);
-    border-color: #ff768c;
+    background-color: var(--bg-gradient-light);
+    border-color: var(--primary-color);
 }
 
 @keyframes latidoGanador {
     from { transform: scale(1); }
-    to { transform: scale(1.1); box-shadow: 0 0 15px rgba(255,118,140,0.5); }
+    to { transform: scale(1.1); box-shadow: 0 0 15px var(--primary-color); }
 }
 
 .corazon-flotante {

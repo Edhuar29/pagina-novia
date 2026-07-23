@@ -1,32 +1,32 @@
 :root {
-    /* Colores Suaves (Pasteles) - Light Mode */
-    --primary-color: #f7cac9; /* Rosa cuarzo */
-    --secondary-color: #dec2cb; /* Lavanda suave */
-    --accent-color: #f0a8b9;
-    --bg-color: #fcf9f9;
-    --text-dark: #4a4a4a;
-    --text-light: #7a7a7a;
+    /* Navy Blue & Coral (Mar y Atardecer) - Light Mode */
+    --primary-color: #ff7f50; /* Coral */
+    --secondary-color: #ff9966; /* Durazno suave */
+    --accent-color: #2c3e50; /* Azul Marino */
+    --bg-color: #f0f4f8;
+    --text-dark: #1a202c;
+    --text-light: #4a5568;
     --glass-bg: rgba(255, 255, 255, 0.4);
     --glass-border: rgba(255, 255, 255, 0.6);
-    --glass-shadow: 0 8px 32px 0 rgba(193, 161, 172, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(44, 62, 80, 0.15);
     --theme-btn-bg: #fff;
-    --theme-btn-color: #4a4a4a;
-    --bg-gradient-light: #fef0f4;
+    --theme-btn-color: #1a202c;
+    --bg-gradient-light: #e2e8f0;
 }
 
 [data-theme="dark"] {
-    /* Modo Noche Estrellada - Dark Mode */
-    --primary-color: #ff2a5f; /* Rosa Neón */
-    --secondary-color: #6a0572; /* Púrpura Profundo */
-    --accent-color: #ff007f; /* Rosa Brillante */
-    --bg-color: #0d0f18; /* Azul Noche casi negro */
-    --text-dark: #f8fafc; /* Blanco suave */
-    --text-light: #a0aec0; /* Gris azulado */
-    --glass-bg: rgba(13, 15, 24, 0.7); /* Cristal oscuro */
-    --glass-border: rgba(255, 42, 95, 0.3); /* Borde rosa neón */
-    --glass-shadow: 0 8px 32px 0 rgba(255, 0, 127, 0.25);
+    /* Mar y Atardecer - Dark Mode */
+    --primary-color: #ff6b6b; /* Coral Vibrante */
+    --secondary-color: #ffa07a; /* Salmón */
+    --accent-color: #ff7f50; /* Naranja Coral */
+    --bg-color: #0b1320; /* Azul Marino Profundo */
+    --text-dark: #f7fafc;
+    --text-light: #a0aec0;
+    --glass-bg: rgba(11, 19, 32, 0.7);
+    --glass-border: rgba(255, 107, 107, 0.3);
+    --glass-shadow: 0 8px 32px 0 rgba(255, 107, 107, 0.25);
     --theme-btn-bg: #1a202c;
-    --theme-btn-color: #fbd38d; /* Color luna dorada */
+    --theme-btn-color: #ff7f50;
     --bg-gradient-light: transparent;
 }
 
@@ -118,7 +118,7 @@ h1, h2, h3, h4 {
 .hero-content h1 {
     font-size: 3rem;
     margin-bottom: 20px;
-    color: #db7093; /* Un rosa más intenso para el título */
+    color: var(--primary-color);
 }
 
 .hero-content p {
