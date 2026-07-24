@@ -181,6 +181,14 @@ export class JuegoViajeBYD {
             // Ecuación de ondas para montañas suaves
             let heightOffset = Math.sin(i * 0.4) * scaleY + Math.sin(i * 0.15) * (scaleY * 0.4);
             
+            // Suelo plano al inicio (dar tiempo para arrancar)
+            if (i < 15) {
+                heightOffset = 0;
+            } else if (i < 25) {
+                // Transición suave hacia las montañas
+                heightOffset = heightOffset * ((i - 15) / 10);
+            }
+
             // Suavizar la meta
             if (i > (this.distanciaTotal / segmentWidth) - 10) {
                 heightOffset = 0;
