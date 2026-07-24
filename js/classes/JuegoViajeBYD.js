@@ -241,29 +241,29 @@ export class JuegoViajeBYD {
             collisionFilter: { group: -1 } 
         };
         
-        // Llantas (más grandes y con mucha fricción para agarre)
-        this.wheelA = this.Bodies.circle(carX - 45, carY + 20, 20, wheelOpts);
-        this.wheelB = this.Bodies.circle(carX + 45, carY + 20, 20, wheelOpts);
+        // Llantas
+        this.wheelA = this.Bodies.circle(carX - 45, carY + 35, 20, wheelOpts);
+        this.wheelB = this.Bodies.circle(carX + 45, carY + 35, 20, wheelOpts);
 
         // Chasis del coche (fricción 0 para que resbale si choca con la panza)
         this.carBody = this.Bodies.rectangle(carX, carY, 120, 30, { 
-            chamfer: { radius: 15 }, // Más redondeado para no atascarse
+            chamfer: { radius: 10 },
             density: 0.02,
             friction: 0.0,
             collisionFilter: { group: -1 },
             label: 'chasis'
         });
 
-        // Suspensión (más rígida y alta para evitar raspar el suelo)
+        // Suspensión
         let axelA = this.Constraint.create({
             bodyA: this.carBody, bodyB: this.wheelA,
             pointA: { x: -40, y: 15 },
-            stiffness: 0.4, length: 20, damping: 0.1
+            stiffness: 0.3, damping: 0.1
         });
         let axelB = this.Constraint.create({
             bodyA: this.carBody, bodyB: this.wheelB,
             pointA: { x: 40, y: 15 },
-            stiffness: 0.4, length: 20, damping: 0.1
+            stiffness: 0.3, damping: 0.1
         });
 
         this.car = this.Composite.create({
@@ -578,27 +578,24 @@ export class JuegoViajeBYD {
         this.ctx.rotate(wheelBody.angle);
         
         // Goma negra
-        this.ctx.fillStyle = '#222';
+        this.ctx.fillStyle = '#333';
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, 18, 0, Math.PI*2);
+        this.ctx.arc(0, 0, 20, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Rines
+        this.ctx.fillStyle = '#ccc';
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, 10, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Rin
-        this.ctx.fillStyle = '#ddd';
+        this.ctx.strokeStyle = '#555';
+        this.ctx.lineWidth = 3;
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, 8, 0, Math.PI*2);
-        this.ctx.fill();
-        
-        // Línea (rines)
-        this.ctx.strokeStyle = '#aaa';
-        this.ctx.lineWidth = 2;
-        this.ctx.beginPath();
-        this.ctx.moveTo(-18,0);
-        this.ctx.lineTo(18, 0);
-        this.ctx.stroke();
-        this.ctx.beginPath();
-        this.ctx.moveTo(0,-18);
-        this.ctx.lineTo(0, 18);
+        this.ctx.moveTo(-20, 0);
+        this.ctx.lineTo(20, 0);
+        this.ctx.moveTo(0, -20);
+        this.ctx.lineTo(0, 20);
         this.ctx.stroke();
 
         this.ctx.restore();
