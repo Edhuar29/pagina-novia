@@ -157,6 +157,23 @@ export class JuegoViajeBYD {
                 } else if (b.label === 'turbo' && (a === this.carBody || a === this.wheelA || a === this.wheelB)) {
                     this.recogerTurbo(b);
                 }
+
+                // Si el chasis choca con el suelo (detectar vuelco)
+                let chasis = null;
+                if (a.label === 'chasis' && b.label === 'terreno') chasis = a;
+                else if (b.label === 'chasis' && a.label === 'terreno') chasis = b;
+
+                if (chasis && !this.gameOver && !this.victoria) {
+                    // Normalizar ángulo entre -PI y PI
+                    let angulo = chasis.angle % (Math.PI * 2);
+                    if (angulo < -Math.PI) angulo += 2 * Math.PI;
+                    if (angulo > Math.PI) angulo -= 2 * Math.PI;
+                    
+                    // Si choca con el piso y está de cabeza (más de 100 grados), se volcó.
+                    if (Math.abs(angulo) > Math.PI * 0.55) {
+                        this.finJuego('vuelco');
+                    }
+                }
             });
         });
 
@@ -332,13 +349,8 @@ export class JuegoViajeBYD {
             this.uiControles.style.display = 'none';
         }
 
-        // Detección de vuelco por ángulo
-        if (!this.gameOver && !this.victoria) {
-            // Si el ángulo pasa de ~110 grados, es que está de cabeza
-            if (Math.abs(this.carBody.angle) > Math.PI * 0.6) {
-                this.finJuego('vuelco');
-            }
-        }
+        // La detección de vuelco ahora está en el evento de colisión (iniciarJuego)
+        // para permitir hacer volteretas (flips) en el aire sin morir.
 
         // Físicas del carro (Motor)
         if(!this.gameOver && !this.victoria) {
