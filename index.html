@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 </head>
 <body>
     <div class="patron-fondo"></div>
@@ -194,14 +195,31 @@
 
                 <div id="juego-contenedor-byd" class="juego-pantalla glass" style="display: none;">
                     <h3>Viaje a la Playa 🚗🏖️</h3>
-                    <p class="juego-instrucciones">Toca la pantalla para saltar los obstáculos y llegar a la playa. Si chocas, volvemos a empezar.</p>
+                    <p class="juego-instrucciones">¡Usa los pedales para avanzar sin volcar el carro! Recoge corazones para no quedarte sin gasolina de amor.</p>
                     <div class="niveles-byd" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 10px;">
                         <button class="btn-jugar nivel-btn" data-nivel="facil">Fácil</button>
                         <button class="btn-jugar nivel-btn" data-nivel="medio">Medio</button>
                         <button class="btn-jugar nivel-btn" data-nivel="dificil">Difícil</button>
                     </div>
-                    <div class="progreso-viaje" style="font-weight: 600; color: var(--primary-color);">Progreso: <span id="progreso-byd">0</span>%</div>
-                    <canvas id="canvas-byd" width="600" height="250" style="background:#87CEEB; display:none; margin: 10px auto; border-radius:10px; max-width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);"></canvas>
+                    
+                    <div class="byd-ui" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <div class="progreso-viaje" style="font-weight: 600; color: var(--primary-color);">Distancia: <span id="progreso-byd">0</span>m</div>
+                        <div class="gasolina-container" style="width: 150px; background: #eee; border-radius: 10px; border: 2px solid #ccc; height: 15px; overflow: hidden; position: relative;">
+                            <div id="gasolina-bar" style="width: 100%; background: #ff4757; height: 100%; transition: width 0.3s, background 0.3s;"></div>
+                            <i class="fas fa-heart" style="position: absolute; left: 5px; top: 0px; font-size: 12px; color: #fff;"></i>
+                        </div>
+                    </div>
+
+                    <div style="position: relative; max-width: 100%; margin: 0 auto;">
+                        <canvas id="canvas-byd" width="600" height="300" style="background:#87CEEB; display:none; border-radius:10px; width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);"></canvas>
+                        
+                        <!-- Controles táctiles -->
+                        <div id="byd-controles" style="display: none; position: absolute; bottom: 10px; width: 100%; justify-content: space-between; padding: 0 15px; pointer-events: none;">
+                            <button id="btn-freno" style="pointer-events: auto; background: rgba(200,50,50,0.8); color: white; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 1.2rem; font-weight: bold; box-shadow: 0 4px 0 rgba(150,30,30,1); user-select: none; -webkit-user-select: none;">FRENO</button>
+                            <button id="btn-gas" style="pointer-events: auto; background: rgba(50,200,50,0.8); color: white; border: none; width: 70px; height: 70px; border-radius: 50%; font-size: 1.3rem; font-weight: bold; box-shadow: 0 4px 0 rgba(30,150,30,1); user-select: none; -webkit-user-select: none;">GAS</button>
+                        </div>
+                    </div>
+                    
                     <button class="btn-cerrar-juego" style="margin-top:15px;">Cerrar Juego</button>
                 </div>
 

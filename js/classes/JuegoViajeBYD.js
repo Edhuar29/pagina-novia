@@ -7,346 +7,511 @@ export class JuegoViajeBYD {
         this.progresoSpan = document.getElementById('progreso-byd');
         this.btnNiveles = document.querySelectorAll('.niveles-byd .btn-jugar');
         
+        this.uiControles = document.getElementById('byd-controles');
+        this.uiEstadisticas = document.querySelector('.byd-ui');
+        this.gasolinaBar = document.getElementById('gasolina-bar');
+        
+        this.btnGas = document.getElementById('btn-gas');
+        this.btnFreno = document.getElementById('btn-freno');
+
         this.ancho = this.canvas.width;
         this.alto = this.canvas.height;
-        this.pisoY = this.alto - 40;
+        
+        // Matter.js alias
+        this.Engine = Matter.Engine;
+        this.Render = Matter.Render;
+        this.Runner = Matter.Runner;
+        this.Composites = Matter.Composites;
+        this.Composite = Matter.Composite;
+        this.Constraint = Matter.Constraint;
+        this.MouseConstraint = Matter.MouseConstraint;
+        this.Mouse = Matter.Mouse;
+        this.World = Matter.World;
+        this.Bodies = Matter.Bodies;
+        this.Body = Matter.Body;
+        this.Events = Matter.Events;
 
         this.enJuego = false;
-        this.gameOver = false;
-        this.victoria = false;
+        this.gasolina = 100;
         
-        this.nivelActual = 'medio';
-        this.velocidadFondo = 3;
-        this.frecuenciaObstaculos = 120; // frames
-        
-        this.distanciaTotal = 2000;
-        this.distanciaRecorrida = 0;
-        this.frames = 0;
-        this.obstaculos = [];
-
-        this.carro = {
-            x: 50,
-            y: this.pisoY - 60,
-            w: 100,
-            h: 60,
-            velY: 0,
-            saltando: false,
-            gravedad: 0.6,
-            saltoFuerza: -12
-        };
+        this.distanciaTotal = 4000;
+        this.offsetX = 0; // Cámara
 
         this.asignarEventos();
     }
 
     asignarEventos() {
-        // Seleccionar nivel y empezar
         this.btnNiveles.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.iniciarJuego(e.target.dataset.nivel);
             });
         });
 
-        // Controles de salto (pantalla táctil o espacio)
-        const saltar = (e) => {
-            if(e.type !== 'mousedown') e.preventDefault();
-            if(!this.enJuego && !this.gameOver && !this.victoria) return;
-            
-            if(this.gameOver || this.victoria) {
-                this.iniciarJuego(this.nivelActual); // Reiniciar
-                return;
-            }
-
-            if (!this.carro.saltando) {
-                this.carro.velY = this.carro.saltoFuerza;
-                this.carro.saltando = true;
-            }
+        const setPedal = (tipo, activo) => {
+            if(tipo === 'gas') this.gasPresionado = activo;
+            if(tipo === 'freno') this.frenoPresionado = activo;
         };
 
-        this.canvas.addEventListener('touchstart', saltar, {passive: false});
-        this.canvas.addEventListener('mousedown', saltar);
+        // Pedales táctiles / mouse
+        this.btnGas.addEventListener('mousedown', () => setPedal('gas', true));
+        this.btnGas.addEventListener('mouseup', () => setPedal('gas', false));
+        this.btnGas.addEventListener('mouseleave', () => setPedal('gas', false));
+        this.btnGas.addEventListener('touchstart', (e) => { e.preventDefault(); setPedal('gas', true); });
+        this.btnGas.addEventListener('touchend', (e) => { e.preventDefault(); setPedal('gas', false); });
+
+        this.btnFreno.addEventListener('mousedown', () => setPedal('freno', true));
+        this.btnFreno.addEventListener('mouseup', () => setPedal('freno', false));
+        this.btnFreno.addEventListener('mouseleave', () => setPedal('freno', false));
+        this.btnFreno.addEventListener('touchstart', (e) => { e.preventDefault(); setPedal('freno', true); });
+        this.btnFreno.addEventListener('touchend', (e) => { e.preventDefault(); setPedal('freno', false); });
+
+        // Teclado
         document.addEventListener('keydown', (e) => {
-            if(e.code === 'Space' && this.canvas.offsetParent !== null) {
-                e.preventDefault();
-                saltar(e);
-            }
+            if(e.key === 'ArrowRight' || e.key === 'd') setPedal('gas', true);
+            if(e.key === 'ArrowLeft' || e.key === 'a') setPedal('freno', true);
+        });
+        document.addEventListener('keyup', (e) => {
+            if(e.key === 'ArrowRight' || e.key === 'd') setPedal('gas', false);
+            if(e.key === 'ArrowLeft' || e.key === 'a') setPedal('freno', false);
         });
 
-        // Escuchar el evento de cerrar juegos
         document.addEventListener('cerrarJuegos', () => {
-            this.enJuego = false;
-            this.limpiarCanvas();
+            this.limpiarJuego();
         });
+    }
+
+    limpiarJuego() {
+        this.enJuego = false;
+        if(this.engine) {
+            Matter.Engine.clear(this.engine);
+            if(this.runner) Matter.Runner.stop(this.runner);
+            this.engine = null;
+        }
+        this.uiControles.style.display = 'none';
+        this.uiEstadisticas.style.display = 'none';
+        this.canvas.style.display = 'none';
+        if(this.renderLoop) cancelAnimationFrame(this.renderLoop);
     }
 
     iniciarJuego(nivel) {
-        this.nivelActual = nivel;
-        this.distanciaRecorrida = 0;
-        this.frames = 0;
-        this.obstaculos = [];
+        this.limpiarJuego();
+        
+        this.canvas.style.display = 'block';
+        this.uiControles.style.display = 'flex';
+        this.uiEstadisticas.style.display = 'flex';
+        this.gasolina = 100;
+        this.gasPresionado = false;
+        this.frenoPresionado = false;
         this.gameOver = false;
         this.victoria = false;
-        this.enJuego = true;
-        this.carro.y = this.pisoY - this.carro.h;
-        this.carro.velY = 0;
-        this.carro.saltando = false;
+        this.offsetX = 0;
 
-        // Configurar nivel
+        let terrenoScaleY = 50;
         if(nivel === 'facil') {
-            this.velocidadFondo = 3;
-            this.frecuenciaObstaculos = 150;
-            this.distanciaTotal = 1500;
-        } else if (nivel === 'medio') {
-            this.velocidadFondo = 4.5;
-            this.frecuenciaObstaculos = 100;
-            this.distanciaTotal = 2500;
-        } else { // dificil
-            this.velocidadFondo = 6.5;
-            this.frecuenciaObstaculos = 80;
             this.distanciaTotal = 4000;
+            terrenoScaleY = 40;
+        } else if (nivel === 'medio') {
+            this.distanciaTotal = 6000;
+            terrenoScaleY = 75;
+        } else {
+            this.distanciaTotal = 8000;
+            terrenoScaleY = 120;
         }
 
-        // Permitir que el canvas reciba eventos de teclado
-        this.canvas.setAttribute('tabindex', '0');
-        this.canvas.focus();
-        this.canvas.style.display = 'block';
+        // 1. Motor Matter.js
+        this.engine = this.Engine.create();
+        this.world = this.engine.world;
+        
+        // Gravedad
+        this.engine.gravity.y = 1.0;
 
+        // 2. Construir Terreno
+        this.generarTerreno(terrenoScaleY);
+
+        // 3. Construir Carro
+        this.construirCarro();
+
+        // 4. Lógica de Colisiones (Recolectar corazones o Chocar cabeza)
+        this.Events.on(this.engine, 'collisionStart', (event) => {
+            event.pairs.forEach(pair => {
+                const a = pair.bodyA;
+                const b = pair.bodyB;
+                
+                // Si el sensor de la cabeza toca el suelo = vuelco
+                if ((a === this.carHeadSensor && b.label === 'terreno') || (b === this.carHeadSensor && a.label === 'terreno')) {
+                    this.finJuego('vuelco');
+                }
+                
+                // Si toca un corazón de gasolina
+                if (a.label === 'corazon' && (b === this.carBody || b === this.wheelA || b === this.wheelB || b === this.carHeadSensor)) {
+                    this.recogerGasolina(a);
+                } else if (b.label === 'corazon' && (a === this.carBody || a === this.wheelA || a === this.wheelB || a === this.carHeadSensor)) {
+                    this.recogerGasolina(b);
+                }
+            });
+        });
+
+        // 5. Iniciar simulación manual (para mejor control de cámara)
+        this.enJuego = true;
+        this.runner = this.Runner.create();
+        this.Runner.run(this.runner, this.engine);
+        
         this.loop();
     }
 
-    loop() {
-        if (!this.enJuego) return;
+    generarTerreno(scaleY) {
+        let x = 0;
+        let y = this.alto - 100;
+        const segmentWidth = 100;
+        this.terrenoBlocks = [];
+        this.corazones = [];
 
-        this.actualizar();
-        this.dibujar();
+        // Agregar una plataforma inicial plana
+        let startBlock = this.Bodies.rectangle(-200, y + 50, 1000, 100, { isStatic: true, label: 'terreno', friction: 0.8 });
+        this.World.add(this.world, startBlock);
+        this.terrenoBlocks.push(startBlock);
 
-        if(this.enJuego) {
-            requestAnimationFrame(() => this.loop());
-        }
-    }
+        for (let i = 0; i < this.distanciaTotal / segmentWidth; i++) {
+            x = i * segmentWidth;
+            // Ecuación de ondas para montañas suaves
+            let heightOffset = Math.sin(i * 0.4) * scaleY + Math.sin(i * 0.15) * (scaleY * 0.4);
+            
+            // Suavizar la meta
+            if (i > (this.distanciaTotal / segmentWidth) - 10) {
+                heightOffset = 0;
+            }
 
-    actualizar() {
-        if(this.gameOver || this.victoria) return;
-
-        this.frames++;
-        this.distanciaRecorrida += this.velocidadFondo;
-
-        // Física del salto
-        this.carro.velY += this.carro.gravedad;
-        this.carro.y += this.carro.velY;
-
-        // Colisión con el piso
-        if (this.carro.y > this.pisoY - this.carro.h) {
-            this.carro.y = this.pisoY - this.carro.h;
-            this.carro.velY = 0;
-            this.carro.saltando = false;
-        }
-
-        // Progreso
-        let porc = Math.floor((this.distanciaRecorrida / this.distanciaTotal) * 100);
-        if(porc > 100) porc = 100;
-        this.progresoSpan.textContent = porc;
-
-        if (this.distanciaRecorrida >= this.distanciaTotal) {
-            this.victoria = true;
-            this.enJuego = false;
-            this.dibujar(); // Dibujar pantalla de victoria final
-            return;
-        }
-
-        // Generar obstáculos
-        if (this.frames % this.frecuenciaObstaculos === 0 && this.distanciaRecorrida < this.distanciaTotal - 300) {
-            this.obstaculos.push({
-                x: this.ancho,
-                y: this.pisoY - 30,
-                w: 25,
-                h: 30
+            let blockY = this.alto - 50 - heightOffset;
+            
+            let rect = this.Bodies.rectangle(x, blockY + 200, segmentWidth + 5, 400, {
+                isStatic: true,
+                friction: 0.8,
+                restitution: 0.1,
+                label: 'terreno'
             });
-        }
+            this.World.add(this.world, rect);
+            this.terrenoBlocks.push(rect);
 
-        // Mover y limpiar obstáculos
-        for (let i = 0; i < this.obstaculos.length; i++) {
-            let obs = this.obstaculos[i];
-            obs.x -= this.velocidadFondo;
-
-            // Colisión (Hitbox ajustado para ser amable)
-            let hitboxCarro = { x: this.carro.x + 10, y: this.carro.y + 10, w: this.carro.w - 20, h: this.carro.h - 15 };
-            let hitboxObs = { x: obs.x + 5, y: obs.y + 5, w: obs.w - 10, h: obs.h - 5 };
-
-            if (hitboxCarro.x < hitboxObs.x + hitboxObs.w &&
-                hitboxCarro.x + hitboxCarro.w > hitboxObs.x &&
-                hitboxCarro.y < hitboxObs.y + hitboxObs.h &&
-                hitboxCarro.y + hitboxCarro.h > hitboxObs.y) {
-                this.gameOver = true;
-                this.enJuego = false;
-                this.dibujar(); // Dibujar pantalla de choque final
+            // Generar gasolina (Corazones) cada cierto espacio
+            if (i > 15 && i % 25 === 0 && heightOffset < scaleY/2) {
+                let heart = this.Bodies.circle(x, blockY - 150, 20, {
+                    isStatic: true,
+                    isSensor: true,
+                    label: 'corazon'
+                });
+                this.World.add(this.world, heart);
+                this.corazones.push(heart);
             }
         }
 
-        this.obstaculos = this.obstaculos.filter(obs => obs.x + obs.w > 0);
+        // Meta (Pared invisible en la playa)
+        let meta = this.Bodies.rectangle(this.distanciaTotal + 500, this.alto / 2, 50, 1000, { isStatic: true });
+        this.World.add(this.world, meta);
     }
 
-    dibujar() {
-        // Fondo del cielo y ciudad/playa
-        if(this.distanciaRecorrida > this.distanciaTotal - 800) {
-            // Zona de transición a la playa
-            this.ctx.fillStyle = '#87CEEB'; // Cielo claro
-            this.ctx.fillRect(0, 0, this.ancho, this.alto);
-            // Sol
-            this.ctx.fillStyle = '#FFD700';
-            this.ctx.beginPath();
-            this.ctx.arc(this.ancho - 80, 60, 40, 0, Math.PI*2);
-            this.ctx.fill();
-        } else {
-            // Zona ciudad/carretera normal
-            this.ctx.fillStyle = '#A0D8EF';
-            this.ctx.fillRect(0, 0, this.ancho, this.alto);
-        }
+    construirCarro() {
+        const carX = 150;
+        const carY = 0;
 
-        // Piso
-        if(this.distanciaRecorrida > this.distanciaTotal - 600) {
-            this.ctx.fillStyle = '#EED690'; // Arena
-        } else {
-            this.ctx.fillStyle = '#555'; // Asfalto
-        }
-        this.ctx.fillRect(0, this.pisoY, this.ancho, this.alto - this.pisoY);
+        // Chasis
+        this.carBody = this.Bodies.rectangle(carX, carY, 110, 30, {
+            collisionFilter: { group: -1 },
+            friction: 0.1,
+            density: 0.003,
+            label: 'chasis'
+        });
 
-        // Nubes (movimiento lento)
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        let nubeX = (this.frames * 0.5) % (this.ancho + 200);
-        this.dibujarNube(this.ancho - nubeX, 50);
-        this.dibujarNube(this.ancho - nubeX + 300, 80);
+        // Sensor de Cabeza (Para detectar vuelcos)
+        this.carHeadSensor = this.Bodies.rectangle(carX, carY - 25, 60, 10, {
+            isSensor: true,
+            collisionFilter: { group: -1 },
+            label: 'headSensor'
+        });
 
-        // Carro BYD
-        this.dibujarCarro(this.carro.x, this.carro.y, this.carro.w, this.carro.h);
+        // Llantas (más densidad para que tengan tracción real)
+        this.wheelA = this.Bodies.circle(carX - 45, carY + 20, 18, {
+            collisionFilter: { group: -1 },
+            friction: 1.0, 
+            restitution: 0.1,
+            density: 0.005
+        });
+        
+        this.wheelB = this.Bodies.circle(carX + 45, carY + 20, 18, {
+            collisionFilter: { group: -1 },
+            friction: 1.0,
+            restitution: 0.1,
+            density: 0.005
+        });
 
-        // Obstáculos
-        for (let obs of this.obstaculos) {
-            this.dibujarObstaculo(obs.x, obs.y, obs.w, obs.h);
-        }
+        // Unir piezas al chasis
+        let axelA = this.Constraint.create({
+            bodyB: this.carBody,
+            pointB: { x: -45, y: 15 },
+            bodyA: this.wheelA,
+            stiffness: 0.15, // Suspensión suave
+            damping: 0.05
+        });
+        let axelB = this.Constraint.create({
+            bodyB: this.carBody,
+            pointB: { x: 45, y: 15 },
+            bodyA: this.wheelB,
+            stiffness: 0.15, // Suspensión suave
+            damping: 0.05
+        });
+        let headTie = this.Constraint.create({
+            bodyA: this.carBody,
+            bodyB: this.carHeadSensor,
+            pointB: {x:0,y:25},
+            stiffness: 1,
+            length: 0
+        });
 
-        // Textos de fin de juego
-        if (this.victoria) {
-            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-            this.ctx.fillRect(0, 0, this.ancho, this.alto);
-            this.ctx.fillStyle = '#ff7f50';
-            this.ctx.font = '24px Poppins, sans-serif';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('¡Llegamos a la playa!', this.ancho/2, this.alto/2 - 10);
-            this.ctx.fillStyle = '#333';
-            this.ctx.font = '16px Poppins, sans-serif';
-            this.ctx.fillText('Contigo voy al fin del mundo 💖', this.ancho/2, this.alto/2 + 20);
-            this.ctx.fillText('Toca para jugar otra vez', this.ancho/2, this.alto/2 + 60);
-        } else if (this.gameOver) {
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-            this.ctx.fillRect(0, 0, this.ancho, this.alto);
-            this.ctx.fillStyle = '#fff';
-            this.ctx.font = '30px Poppins, sans-serif';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('¡Ups! Chocamos 💥', this.ancho/2, this.alto/2);
-            this.ctx.font = '16px Poppins, sans-serif';
-            this.ctx.fillText('Toca para intentar de nuevo', this.ancho/2, this.alto/2 + 40);
-        }
+        this.car = this.Composite.create({
+            bodies: [this.carBody, this.carHeadSensor, this.wheelA, this.wheelB],
+            constraints: [axelA, axelB, headTie]
+        });
+
+        this.World.add(this.world, this.car);
     }
 
-    dibujarNube(x, y) {
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, 20, Math.PI * 0.5, Math.PI * 1.5);
-        this.ctx.arc(x + 25, y - 10, 25, Math.PI * 1, Math.PI * 2);
-        this.ctx.arc(x + 50, y, 20, Math.PI * 1.5, Math.PI * 0.5);
-        this.ctx.closePath();
-        this.ctx.fill();
+    recogerGasolina(corazonBody) {
+        this.gasolina += 40;
+        if(this.gasolina > 100) this.gasolina = 100;
+        this.World.remove(this.world, corazonBody);
+        this.corazones = this.corazones.filter(c => c !== corazonBody);
     }
 
-    dibujarCarro(x, y, w, h) {
-        // Silueta del carro (Estilo BYD Blanco moderno)
-        this.ctx.fillStyle = '#ffffff'; // Color blanco común
-        this.ctx.beginPath();
-        this.ctx.moveTo(x + 10, y + h - 15); // base trasera
-        this.ctx.lineTo(x + 10, y + 25); // maletero
-        this.ctx.lineTo(x + 30, y + 5);  // techo atras
-        this.ctx.lineTo(x + w - 30, y + 5); // techo adelante
-        this.ctx.lineTo(x + w - 5, y + 25); // capot
-        this.ctx.lineTo(x + w, y + h - 15); // parachoques frontal
-        this.ctx.lineTo(x + 10, y + h - 15); 
-        this.ctx.fill();
-        this.ctx.lineWidth = 1;
-        this.ctx.strokeStyle = '#ccc';
-        this.ctx.stroke();
-
-        // Ventanas (Vidrios oscuros)
-        this.ctx.fillStyle = '#88ccff';
-        this.ctx.beginPath();
-        this.ctx.moveTo(x + 32, y + 10);
-        this.ctx.lineTo(x + 50, y + 10);
-        this.ctx.lineTo(x + 50, y + 25);
-        this.ctx.lineTo(x + 25, y + 25);
-        this.ctx.fill();
-
-        this.ctx.beginPath();
-        this.ctx.moveTo(x + 55, y + 10);
-        this.ctx.lineTo(x + w - 35, y + 10);
-        this.ctx.lineTo(x + w - 15, y + 25);
-        this.ctx.lineTo(x + 55, y + 25);
-        this.ctx.fill();
-
-        // Luces LED (Típicas de BYD)
-        this.ctx.fillStyle = '#ff3333'; // Freno
-        this.ctx.fillRect(x + 5, y + 20, 5, 8);
-        this.ctx.fillStyle = '#eef'; // Faro delantero
-        this.ctx.fillRect(x + w - 10, y + 20, 10, 8);
-
-        // Pareja adentro (Siluetas)
-        this.ctx.fillStyle = '#333'; // Él manejando
-        this.ctx.beginPath();
-        this.ctx.arc(x + 65, y + 18, 5, 0, Math.PI*2);
-        this.ctx.fill();
-        this.ctx.fillStyle = '#ff99cc'; // Ella acompañante
-        this.ctx.beginPath();
-        this.ctx.arc(x + 40, y + 18, 5, 0, Math.PI*2);
-        this.ctx.fill();
-
-        // Ruedas (Rotando)
-        let angulo = this.frames * 0.2;
-        this.dibujarLlanta(x + 25, y + h - 10, 12, angulo);
-        this.dibujarLlanta(x + w - 25, y + h - 10, 12, angulo);
+    finJuego(motivo) {
+        this.gameOver = true;
+        this.motivoPerdida = motivo;
+        this.uiControles.style.pointerEvents = 'none';
+        this.btnGas.style.opacity = '0.5';
+        this.btnFreno.style.opacity = '0.5';
     }
 
-    dibujarLlanta(x, y, radio, angulo) {
+    loop() {
+        if(!this.enJuego) return;
+
+        // Consumo de gasolina
+        if(!this.gameOver && !this.victoria) {
+            this.gasolina -= 0.15;
+            if(this.gasolina <= 0) {
+                this.gasolina = 0;
+                this.finJuego('gasolina');
+            }
+        }
+        
+        // Actualizar UI
+        this.gasolinaBar.style.width = this.gasolina + '%';
+        if(this.gasolina < 20) this.gasolinaBar.style.background = '#ff0000';
+        else this.gasolinaBar.style.background = '#ff4757';
+
+        let mRecorridos = Math.floor(this.carBody.position.x / 10);
+        if(mRecorridos < 0) mRecorridos = 0;
+        this.progresoSpan.textContent = mRecorridos;
+
+        // Victoria
+        if(this.carBody.position.x >= this.distanciaTotal && !this.gameOver) {
+            this.victoria = true;
+            this.uiControles.style.display = 'none';
+        }
+
+        // Físicas del carro (Motor)
+        if(!this.gameOver && !this.victoria) {
+            const torque = 0.08;
+            if (this.gasPresionado) {
+                this.Body.setAngularVelocity(this.wheelA, Math.min(this.wheelA.angularVelocity + torque, 0.4));
+                this.Body.setAngularVelocity(this.wheelB, Math.min(this.wheelB.angularVelocity + torque, 0.4));
+            }
+            if (this.frenoPresionado) {
+                this.Body.setAngularVelocity(this.wheelA, Math.max(this.wheelA.angularVelocity - torque, -0.4));
+                this.Body.setAngularVelocity(this.wheelB, Math.max(this.wheelB.angularVelocity - torque, -0.4));
+            }
+        }
+
+        this.dibujarEscena();
+
+        this.renderLoop = requestAnimationFrame(() => this.loop());
+    }
+
+    dibujarEscena() {
+        this.ctx.clearRect(0, 0, this.ancho, this.alto);
+
+        // Cámara sigue al chasis del coche
+        let targetOffsetX = this.carBody.position.x - this.ancho * 0.3; 
+        this.offsetX += (targetOffsetX - this.offsetX) * 0.1;
+
         this.ctx.save();
-        this.ctx.translate(x, y);
-        this.ctx.rotate(angulo);
-        this.ctx.fillStyle = '#222';
+        
+        // --- FONDO PARALLAX ---
+        let progreso = this.carBody.position.x / this.distanciaTotal;
+        if(progreso > 1) progreso = 1;
+        if(progreso < 0) progreso = 0;
+        
+        this.ctx.fillStyle = `rgba(135, 206, 235, ${1 - progreso*0.5})`; // Cielo se aclara/oscurece
+        this.ctx.fillRect(0, 0, this.ancho, this.alto);
+
+        let solX = this.distanciaTotal - this.offsetX + 300;
+        this.ctx.fillStyle = '#FFD700';
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, radio, 0, Math.PI*2);
+        this.ctx.arc(solX, 100, 60, 0, Math.PI*2);
+        this.ctx.fill();
+
+        this.ctx.translate(-this.offsetX, 0);
+
+        // --- TERRENO ---
+        this.ctx.fillStyle = '#4CAF50'; 
+        if (progreso > 0.8) this.ctx.fillStyle = '#EED690'; // Playa final
+
+        this.ctx.beginPath();
+        for(let block of this.terrenoBlocks) {
+            // Unir todos los rectángulos en un solo path para renderizar suave
+            let p = block.vertices;
+            this.ctx.moveTo(p[0].x, p[0].y);
+            for (let j = 1; j < p.length; j++) {
+                this.ctx.lineTo(p[j].x, p[j].y);
+            }
+        }
         this.ctx.fill();
         
-        // Rin metalizado
+        this.ctx.lineWidth = 4;
+        this.ctx.strokeStyle = '#2E7D32';
+        if (progreso > 0.8) this.ctx.strokeStyle = '#C2B280';
+        this.ctx.stroke();
+
+        // --- CORAZONES DE GASOLINA ---
+        for(let corazon of this.corazones) {
+            this.dibujarCorazon(corazon.position.x, corazon.position.y);
+        }
+
+        // --- COCHE BYD ---
+        this.dibujarBYD();
+
+        this.ctx.restore();
+
+        // --- UI ESTADOS FINALES ---
+        if(this.gameOver) {
+            this.ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            this.ctx.fillRect(0,0,this.ancho, this.alto);
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = 'bold 30px Poppins, sans-serif';
+            this.ctx.textAlign = 'center';
+            
+            let txt = this.motivoPerdida === 'vuelco' ? '¡Se volcó el carro! 💥' : '¡Sin gasolina! ⛽';
+            this.ctx.fillText(txt, this.ancho/2, this.alto/2 - 10);
+            
+            this.ctx.font = '16px Poppins, sans-serif';
+            this.ctx.fillText('Cierra el juego o elige un nivel de nuevo', this.ancho/2, this.alto/2 + 30);
+        } else if (this.victoria) {
+            this.ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            this.ctx.fillRect(0,0,this.ancho, this.alto);
+            this.ctx.fillStyle = '#ff7f50';
+            this.ctx.font = 'bold 30px Poppins, sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('¡Llegamos a la playa! 🏖️', this.ancho/2, this.alto/2 - 10);
+            this.ctx.fillStyle = '#333';
+            this.ctx.font = '16px Poppins, sans-serif';
+            this.ctx.fillText('Contigo manejo a cualquier lado 💖', this.ancho/2, this.alto/2 + 30);
+        }
+    }
+
+    dibujarBYD() {
+        const x = this.carBody.position.x;
+        const y = this.carBody.position.y;
+        const ang = this.carBody.angle;
+
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        this.ctx.rotate(ang);
+
+        // Chasis Blanco
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.beginPath();
+        this.ctx.roundRect(-55, -15, 110, 30, 5); // Base
+        this.ctx.roundRect(-30, -35, 60, 25, 8);  // Cabina
+        this.ctx.fill();
+        this.ctx.strokeStyle = '#ccc';
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+
+        // Ventanas
+        this.ctx.fillStyle = '#88ccff';
+        this.ctx.beginPath();
+        this.ctx.roundRect(-25, -30, 25, 15, 3); // Trasera
+        this.ctx.roundRect(5, -30, 20, 15, 3); // Delantera
+        this.ctx.fill();
+
+        // Pareja
+        this.ctx.fillStyle = '#333'; // Él
+        this.ctx.beginPath();
+        this.ctx.arc(15, -20, 6, 0, Math.PI*2);
+        this.ctx.fill();
+        this.ctx.fillStyle = '#ff99cc'; // Ella
+        this.ctx.beginPath();
+        this.ctx.arc(-10, -20, 6, 0, Math.PI*2);
+        this.ctx.fill();
+
+        // Luces
+        this.ctx.fillStyle = '#ff3333';
+        this.ctx.fillRect(-55, -5, 5, 8); // Freno trasero
+        this.ctx.fillStyle = '#eeffff';
+        this.ctx.fillRect(50, -5, 5, 8);  // Faro delantero
+
+        this.ctx.restore();
+
+        // Llantas
+        this.dibujarLlanta(this.wheelA);
+        this.dibujarLlanta(this.wheelB);
+    }
+
+    dibujarLlanta(wheelBody) {
+        this.ctx.save();
+        this.ctx.translate(wheelBody.position.x, wheelBody.position.y);
+        this.ctx.rotate(wheelBody.angle);
+        
+        // Goma negra
+        this.ctx.fillStyle = '#222';
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, 18, 0, Math.PI*2);
+        this.ctx.fill();
+        
+        // Rin
         this.ctx.fillStyle = '#ddd';
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, radio/2, 0, Math.PI*2);
+        this.ctx.arc(0, 0, 8, 0, Math.PI*2);
         this.ctx.fill();
+        
+        // Línea (rines)
+        this.ctx.strokeStyle = '#aaa';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(-18,0);
+        this.ctx.lineTo(18, 0);
+        this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.moveTo(0,-18);
+        this.ctx.lineTo(0, 18);
+        this.ctx.stroke();
+
         this.ctx.restore();
     }
 
-    dibujarObstaculo(x, y, w, h) {
-        // Cono de tráfico
-        this.ctx.fillStyle = '#ff6b6b';
+    dibujarCorazon(x, y) {
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        this.ctx.scale(0.8, 0.8);
+        this.ctx.fillStyle = '#ff4757';
         this.ctx.beginPath();
-        this.ctx.moveTo(x + w/2, y);
-        this.ctx.lineTo(x + w, y + h);
-        this.ctx.lineTo(x, y + h);
+        this.ctx.moveTo(0, 5);
+        this.ctx.bezierCurveTo(0, -15, -20, -15, -20, 5);
+        this.ctx.bezierCurveTo(-20, 20, 0, 30, 0, 35);
+        this.ctx.bezierCurveTo(0, 30, 20, 20, 20, 5);
+        this.ctx.bezierCurveTo(20, -15, 0, -15, 0, 5);
         this.ctx.fill();
-        // Franja blanca del cono
-        this.ctx.fillStyle = '#fff';
-        this.ctx.beginPath();
-        this.ctx.moveTo(x + w/4, y + h/2);
-        this.ctx.lineTo(x + w - w/4, y + h/2);
-        this.ctx.lineTo(x + w - w/6, y + h/2 + 5);
-        this.ctx.lineTo(x + w/6, y + h/2 + 5);
+        
+        this.ctx.shadowColor = '#ff4757';
+        this.ctx.shadowBlur = 10;
         this.ctx.fill();
-    }
-
-    limpiarCanvas() {
-        if(this.ctx) this.ctx.clearRect(0, 0, this.ancho, this.alto);
+        this.ctx.restore();
     }
 }
