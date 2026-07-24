@@ -7,7 +7,7 @@ import { JuegosController } from './classes/JuegosController.js';
 import { JuegoTicTacToe } from './classes/JuegoTicTacToe.js';
 import { JuegoFlappyCorazon } from './classes/JuegoFlappyCorazon.js';
 import { JuegoAtrapaBesos } from './classes/JuegoAtrapaBesos.js';
-import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js';
+import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js?v=3';
 import { ThemeController } from './classes/ThemeController.js';
 
 // Cuando la página termine de cargar, inicializamos nuestras clases
