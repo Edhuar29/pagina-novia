@@ -108,6 +108,7 @@ export class JuegoViajeBYD {
         this.offsetX = 0;
         this.offsetY = 0;
         this.turbos = [];
+        this.gradientDia = null; // Para cachear degradados
 
         let terrenoScaleY = 50;
         if(nivel === 'facil') {
@@ -121,8 +122,11 @@ export class JuegoViajeBYD {
             terrenoScaleY = 120;
         }
 
-        // 1. Motor Matter.js
-        this.engine = this.Engine.create();
+        // 1. Motor Matter.js (Optimizado)
+        this.engine = this.Engine.create({
+            positionIterations: 4, // Reduce carga de CPU
+            velocityIterations: 3
+        });
         this.world = this.engine.world;
         
         // Gravedad
@@ -377,19 +381,28 @@ export class JuegoViajeBYD {
         let progreso = this.carBody.position.x / this.distanciaTotal;
         if(progreso > 1) progreso = 1;
         if(progreso < 0) progreso = 0;
-        
-        // Gradiente de cielo (fijo a la pantalla)
-        let gradientCielo = this.ctx.createLinearGradient(0, 0, 0, this.alto);
-        if (progreso > 0.8) {
-            // Atardecer en la playa
-            gradientCielo.addColorStop(0, '#FF7E5F');
-            gradientCielo.addColorStop(1, '#FEB47B');
-        } else {
-            // Día normal
-            gradientCielo.addColorStop(0, '#87CEEB');
-            gradientCielo.addColorStop(1, '#E0F6FF');
+
+        // Cachear gradientes para no crearlos 60 veces por segundo (quita lag)
+        if (!this.gradientDia) {
+            this.gradientDia = this.ctx.createLinearGradient(0, 0, 0, this.alto);
+            this.gradientDia.addColorStop(0, '#87CEEB');
+            this.gradientDia.addColorStop(1, '#E0F6FF');
+
+            this.gradientAtardecer = this.ctx.createLinearGradient(0, 0, 0, this.alto);
+            this.gradientAtardecer.addColorStop(0, '#FF7E5F');
+            this.gradientAtardecer.addColorStop(1, '#FEB47B');
+
+            this.gradientTerrenoDia = this.ctx.createLinearGradient(0, this.alto - 200, 0, this.alto);
+            this.gradientTerrenoDia.addColorStop(0, '#4CAF50');
+            this.gradientTerrenoDia.addColorStop(1, '#2E7D32');
+
+            this.gradientTerrenoPlaya = this.ctx.createLinearGradient(0, this.alto - 200, 0, this.alto);
+            this.gradientTerrenoPlaya.addColorStop(0, '#F4E3A6');
+            this.gradientTerrenoPlaya.addColorStop(1, '#D4B86A');
         }
-        this.ctx.fillStyle = gradientCielo;
+
+        // Gradiente de cielo (fijo a la pantalla)
+        this.ctx.fillStyle = (progreso > 0.8) ? this.gradientAtardecer : this.gradientDia;
         this.ctx.fillRect(0, 0, this.ancho, this.alto);
 
         // Montañas de fondo (Parallax lento)
@@ -415,16 +428,8 @@ export class JuegoViajeBYD {
         // Aplicar transformación de cámara para el mundo físico
         this.ctx.translate(-this.offsetX, -this.offsetY);
 
-        // --- TERRENO (Gradiente sin rectángulos) ---
-        let gradientTerreno = this.ctx.createLinearGradient(0, this.alto - 200, 0, this.alto);
-        if (progreso > 0.8) {
-            gradientTerreno.addColorStop(0, '#F4E3A6');
-            gradientTerreno.addColorStop(1, '#D4B86A');
-        } else {
-            gradientTerreno.addColorStop(0, '#4CAF50');
-            gradientTerreno.addColorStop(1, '#2E7D32');
-        }
-        this.ctx.fillStyle = gradientTerreno; 
+        // --- TERRENO (Gradiente cacheado) ---
+        this.ctx.fillStyle = (progreso > 0.8) ? this.gradientTerrenoPlaya : this.gradientTerrenoDia; 
 
         const camIzq = this.offsetX - 300;
         const camDer = this.offsetX + this.ancho + 300;
