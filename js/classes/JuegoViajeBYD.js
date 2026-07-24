@@ -352,25 +352,33 @@ export class JuegoViajeBYD {
         this.ctx.fillStyle = '#4CAF50'; 
         if (progreso > 0.8) this.ctx.fillStyle = '#EED690'; // Playa final
 
-        this.ctx.beginPath();
-        for(let block of this.terrenoBlocks) {
-            // Unir todos los rectángulos en un solo path para renderizar suave
-            let p = block.vertices;
-            this.ctx.moveTo(p[0].x, p[0].y);
-            for (let j = 1; j < p.length; j++) {
-                this.ctx.lineTo(p[j].x, p[j].y);
-            }
-        }
-        this.ctx.fill();
-        
         this.ctx.lineWidth = 4;
         this.ctx.strokeStyle = '#2E7D32';
         if (progreso > 0.8) this.ctx.strokeStyle = '#C2B280';
-        this.ctx.stroke();
+
+        const camIzq = this.offsetX - 200;
+        const camDer = this.offsetX + this.ancho + 200;
+
+        for(let block of this.terrenoBlocks) {
+            // Solo dibujar los bloques visibles en la cámara
+            if (block.position.x > camIzq && block.position.x < camDer) {
+                this.ctx.beginPath();
+                let p = block.vertices;
+                this.ctx.moveTo(p[0].x, p[0].y);
+                for (let j = 1; j < p.length; j++) {
+                    this.ctx.lineTo(p[j].x, p[j].y);
+                }
+                this.ctx.closePath();
+                this.ctx.fill();
+                this.ctx.stroke();
+            }
+        }
 
         // --- CORAZONES DE GASOLINA ---
         for(let corazon of this.corazones) {
-            this.dibujarCorazon(corazon.position.x, corazon.position.y);
+            if (corazon.position.x > camIzq && corazon.position.x < camDer) {
+                this.dibujarCorazon(corazon.position.x, corazon.position.y);
+            }
         }
 
         // --- COCHE BYD ---

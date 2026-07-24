@@ -19,8 +19,15 @@ export class AnimadorScroll {
     }
 
     asignarEventos() {
-        // Revisar cada vez que el usuario haga scroll
-        window.addEventListener('scroll', () => this.revisarElementosVisibles());
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            if (!scrollTimeout) {
+                scrollTimeout = requestAnimationFrame(() => {
+                    this.revisarElementosVisibles();
+                    scrollTimeout = null;
+                });
+            }
+        });
         
         // Ejecutar una vez al inicio para mostrar los elementos que ya estén en pantalla
         this.revisarElementosVisibles();
