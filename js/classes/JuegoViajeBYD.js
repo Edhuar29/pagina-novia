@@ -258,16 +258,16 @@ export class JuegoViajeBYD {
             label: 'chasis'
         });
 
-        // Suspensión
+        // Suspensión (sin péndulo: anclamos el punto fuera del chasis con length 0)
         let axelA = this.Constraint.create({
             bodyA: this.carBody, bodyB: this.wheelA,
-            pointA: { x: -40, y: 15 },
-            stiffness: 0.8, length: 22, damping: 0.1
+            pointA: { x: -40, y: 35 }, // Anclaje fuera del chasis
+            stiffness: 0.3, length: 0, damping: 0.1
         });
         let axelB = this.Constraint.create({
             bodyA: this.carBody, bodyB: this.wheelB,
-            pointA: { x: 40, y: 15 },
-            stiffness: 0.8, length: 22, damping: 0.1
+            pointA: { x: 40, y: 35 }, // Anclaje fuera del chasis
+            stiffness: 0.3, length: 0, damping: 0.1
         });
 
         this.car = this.Composite.create({
