@@ -249,25 +249,25 @@ export class JuegoViajeBYD {
         this.wheelA = this.Bodies.circle(carX - 45, carY + 35, 20, wheelOpts);
         this.wheelB = this.Bodies.circle(carX + 45, carY + 35, 20, wheelOpts);
 
-        // Chasis del coche (fricción 0 para que resbale si choca con la panza)
+        // Chasis del coche (muy ligero para que la suspensión no colapse por el peso)
         this.carBody = this.Bodies.rectangle(carX, carY, 120, 30, { 
             chamfer: { radius: 10 },
-            density: 0.02,
+            density: 0.002, // 10x más ligero que antes
             friction: 0.0,
             collisionFilter: { group: -1 },
             label: 'chasis'
         });
 
-        // Suspensión (mucho más rígida y con distancia forzada)
+        // Suspensión
         let axelA = this.Constraint.create({
             bodyA: this.carBody, bodyB: this.wheelA,
             pointA: { x: -40, y: 15 },
-            stiffness: 0.8, length: 25, damping: 0.1
+            stiffness: 0.8, length: 22, damping: 0.1
         });
         let axelB = this.Constraint.create({
             bodyA: this.carBody, bodyB: this.wheelB,
             pointA: { x: 40, y: 15 },
-            stiffness: 0.8, length: 25, damping: 0.1
+            stiffness: 0.8, length: 22, damping: 0.1
         });
 
         this.car = this.Composite.create({
@@ -348,8 +348,8 @@ export class JuegoViajeBYD {
                 this.Body.setAngularVelocity(this.wheelA, 0.55);
                 this.Body.setAngularVelocity(this.wheelB, 0.55);
                 
-                // Ayuda extra con un pequeño empuje hacia adelante y arriba (como tracción 4x4)
-                this.Body.applyForce(this.carBody, this.carBody.position, { x: 0.002, y: -0.001 });
+                // Ayuda extra con un pequeño empuje (escalado al nuevo peso ligero)
+                this.Body.applyForce(this.carBody, this.carBody.position, { x: 0.0002, y: -0.0001 });
                 
                 this.gasolina -= 0.1;
             }
