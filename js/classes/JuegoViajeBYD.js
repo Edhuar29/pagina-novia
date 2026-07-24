@@ -35,7 +35,8 @@ export class JuegoViajeBYD {
         this.gasolina = 100;
         
         this.distanciaTotal = 4000;
-        this.offsetX = 0; // Cámara
+        this.offsetX = 0; // Cámara X
+        this.offsetY = 0; // Cámara Y
 
         this.asignarEventos();
     }
@@ -105,6 +106,7 @@ export class JuegoViajeBYD {
         this.gameOver = false;
         this.victoria = false;
         this.offsetX = 0;
+        this.offsetY = 0;
 
         let terrenoScaleY = 50;
         if(nivel === 'facil') {
@@ -187,9 +189,9 @@ export class JuegoViajeBYD {
             this.World.add(this.world, rect);
             this.terrenoBlocks.push(rect);
 
-            // Generar gasolina (Corazones) más frecuente
+            // Generar gasolina (Corazones) más frecuente y cerca del piso
             if (i > 10 && i % 12 === 0) {
-                let heart = this.Bodies.circle(x, blockY - 120, 20, {
+                let heart = this.Bodies.circle(x, blockY - 50, 20, {
                     isStatic: true,
                     isSensor: true,
                     label: 'corazon'
@@ -326,9 +328,12 @@ export class JuegoViajeBYD {
     dibujarEscena() {
         this.ctx.clearRect(0, 0, this.ancho, this.alto);
 
-        // Cámara sigue al chasis del coche
+        // Cámara sigue al chasis del coche en X y Y
         let targetOffsetX = this.carBody.position.x - this.ancho * 0.3; 
+        let targetOffsetY = this.carBody.position.y - this.alto * 0.6; // Mantiene el carro abajo del centro
+        
         this.offsetX += (targetOffsetX - this.offsetX) * 0.1;
+        this.offsetY += (targetOffsetY - this.offsetY) * 0.1;
 
         this.ctx.save();
         
@@ -337,7 +342,7 @@ export class JuegoViajeBYD {
         if(progreso > 1) progreso = 1;
         if(progreso < 0) progreso = 0;
         
-        // Gradiente de cielo
+        // Gradiente de cielo (fijo a la pantalla)
         let gradientCielo = this.ctx.createLinearGradient(0, 0, 0, this.alto);
         if (progreso > 0.8) {
             // Atardecer en la playa
@@ -355,21 +360,24 @@ export class JuegoViajeBYD {
         this.ctx.fillStyle = (progreso > 0.8) ? 'rgba(255, 140, 100, 0.5)' : 'rgba(150, 200, 150, 0.5)';
         this.ctx.beginPath();
         this.ctx.moveTo(0, this.alto);
-        let fondoOffsetX = this.offsetX * 0.2; // Movimiento más lento
+        let fondoOffsetX = this.offsetX * 0.2;
+        let fondoOffsetY = this.offsetY * 0.2;
         for(let i=0; i <= this.ancho; i+=50) {
-            let mtY = this.alto - 150 + Math.sin((i + fondoOffsetX) * 0.01) * 50;
+            let mtY = this.alto - 150 + Math.sin((i + fondoOffsetX) * 0.01) * 50 - fondoOffsetY;
             this.ctx.lineTo(i, mtY);
         }
         this.ctx.lineTo(this.ancho, this.alto);
         this.ctx.fill();
 
         let solX = this.distanciaTotal - this.offsetX + 300;
+        let solY = 100 - this.offsetY * 0.1;
         this.ctx.fillStyle = '#FFD700';
         this.ctx.beginPath();
-        this.ctx.arc(solX, 100, 60, 0, Math.PI*2);
+        this.ctx.arc(solX, solY, 60, 0, Math.PI*2);
         this.ctx.fill();
 
-        this.ctx.translate(-this.offsetX, 0);
+        // Aplicar transformación de cámara para el mundo físico
+        this.ctx.translate(-this.offsetX, -this.offsetY);
 
         // --- TERRENO (Gradiente) ---
         let gradientTerreno = this.ctx.createLinearGradient(0, this.alto - 200, 0, this.alto);
