@@ -245,9 +245,9 @@ export class JuegoViajeBYD {
             collisionFilter: { group: -1 } 
         };
         
-        // Llantas
-        this.wheelA = this.Bodies.circle(carX - 45, carY + 35, 20, wheelOpts);
-        this.wheelB = this.Bodies.circle(carX + 45, carY + 35, 20, wheelOpts);
+        // Llantas (Alineadas exactamente con los puntos de anclaje de la suspensión)
+        this.wheelA = this.Bodies.circle(carX - 40, carY + 35, 20, wheelOpts);
+        this.wheelB = this.Bodies.circle(carX + 40, carY + 35, 20, wheelOpts);
 
         // Chasis del coche (muy ligero para que la suspensión no colapse por el peso)
         this.carBody = this.Bodies.rectangle(carX, carY, 120, 30, { 
@@ -309,9 +309,8 @@ export class JuegoViajeBYD {
     loop() {
         if(!this.enJuego) return;
 
-        // Consumo de gasolina
+        // Consumo de gasolina solo ocurre al acelerar o frenar (ver abajo)
         if(!this.gameOver && !this.victoria) {
-            this.gasolina -= 0.15;
             if(this.gasolina <= 0) {
                 this.gasolina = 0;
                 this.finJuego('gasolina');
@@ -351,12 +350,12 @@ export class JuegoViajeBYD {
                 // Ayuda extra con un pequeño empuje (escalado al nuevo peso ligero)
                 this.Body.applyForce(this.carBody, this.carBody.position, { x: 0.0002, y: -0.0001 });
                 
-                this.gasolina -= 0.1;
+                this.gasolina -= 0.15; // Consume gasolina solo al acelerar
             }
             if (this.frenoPresionado && this.gasolina > 0) {
                 this.Body.setAngularVelocity(this.wheelA, -0.4);
                 this.Body.setAngularVelocity(this.wheelB, -0.4);
-                this.gasolina -= 0.1;
+                this.gasolina -= 0.15; // Consume gasolina solo al frenar
             }
         }
 
