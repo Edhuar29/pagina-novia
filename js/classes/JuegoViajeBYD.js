@@ -258,16 +258,16 @@ export class JuegoViajeBYD {
             label: 'chasis'
         });
 
-        // Suspensión
+        // Suspensión (mucho más rígida y con distancia forzada)
         let axelA = this.Constraint.create({
             bodyA: this.carBody, bodyB: this.wheelA,
             pointA: { x: -40, y: 15 },
-            stiffness: 0.3, damping: 0.1
+            stiffness: 0.8, length: 25, damping: 0.1
         });
         let axelB = this.Constraint.create({
             bodyA: this.carBody, bodyB: this.wheelB,
             pointA: { x: 40, y: 15 },
-            stiffness: 0.3, damping: 0.1
+            stiffness: 0.8, length: 25, damping: 0.1
         });
 
         this.car = this.Composite.create({
