@@ -171,12 +171,8 @@ export class JuegoViajeBYD {
         this.terrenoBlocks = [];
         this.corazones = [];
 
-        // Agregar una plataforma inicial plana
-        let startBlock = this.Bodies.rectangle(-200, y + 50, 1000, 100, { isStatic: true, label: 'terreno', friction: 0.8 });
-        this.World.add(this.world, startBlock);
-        this.terrenoBlocks.push(startBlock);
-
-        for (let i = 0; i < this.distanciaTotal / segmentWidth; i++) {
+        // Generar desde i = -10 para tener suelo infinito hacia atrás
+        for (let i = -10; i < this.distanciaTotal / segmentWidth; i++) {
             x = i * segmentWidth;
             // Ecuación de ondas para montañas suaves
             let heightOffset = Math.sin(i * 0.4) * scaleY + Math.sin(i * 0.15) * (scaleY * 0.4);
@@ -423,47 +419,52 @@ export class JuegoViajeBYD {
         }
         this.ctx.fillStyle = gradientTerreno; 
 
-        const camIzq = this.offsetX - 200;
-        const camDer = this.offsetX + this.ancho + 200;
+        const camIzq = this.offsetX - 300;
+        const camDer = this.offsetX + this.ancho + 300;
 
-        for(let block of this.terrenoBlocks) {
-            if (block.position.x > camIzq && block.position.x < camDer) {
-                this.ctx.beginPath();
-                let p = block.vertices;
-                this.ctx.moveTo(p[0].x, p[0].y);
-                for (let j = 1; j < p.length; j++) {
-                    this.ctx.lineTo(p[j].x, p[j].y);
-                }
-                this.ctx.closePath();
-                // Solo llenamos, quitamos el stroke para evitar líneas rectangulares
-                this.ctx.fill();
-            }
-        }
-
-        // Borde superior continuo para que se vea bonito (sin costuras)
+        // Borde superior y relleno con un SOLO PATH para optimizar a 60fps
         this.ctx.beginPath();
         let empezo = false;
+        let strokePath = new Path2D();
+        let p_ultimo = null;
+        let p_primero_x = null;
+
         for(let block of this.terrenoBlocks) {
             if (block.position.x > camIzq && block.position.x < camDer) {
                 let p = block.vertices;
                 if(!empezo) {
-                    this.ctx.moveTo(p[0].x, p[0].y);
+                    this.ctx.moveTo(p[0].x, this.alto + 800); // Iniciar muy abajo
+                    this.ctx.lineTo(p[0].x, p[0].y); // Subir a la superficie
+                    strokePath.moveTo(p[0].x, p[0].y);
+                    p_primero_x = p[0].x;
                     empezo = true;
                 } else {
                     this.ctx.lineTo(p[0].x, p[0].y);
+                    strokePath.lineTo(p[0].x, p[0].y);
                 }
                 this.ctx.lineTo(p[1].x, p[1].y);
+                strokePath.lineTo(p[1].x, p[1].y);
+                p_ultimo = p[1];
             }
         }
-        this.ctx.lineWidth = 4;
-        this.ctx.strokeStyle = (progreso > 0.8) ? '#C2B280' : '#2E7D32';
-        this.ctx.stroke();
+        
+        if (empezo && p_ultimo) {
+            this.ctx.lineTo(p_ultimo.x, this.alto + 800); // Bajar
+            this.ctx.lineTo(p_primero_x, this.alto + 800); // Cerrar abajo
+            this.ctx.closePath();
+            this.ctx.fill();
+
+            // Dibujar línea del borde
+            this.ctx.lineWidth = 4;
+            this.ctx.strokeStyle = (progreso > 0.8) ? '#C2B280' : '#2E7D32';
+            this.ctx.stroke(strokePath);
+        }
 
         // --- DECORACIONES DE PLAYA ---
         if (progreso > 0.7) {
-            this.dibujarPalmera(this.distanciaTotal - 500, this.alto - 120);
-            this.dibujarPalmera(this.distanciaTotal - 100, this.alto - 100);
-            this.dibujarPalmera(this.distanciaTotal + 200, this.alto - 80);
+            this.dibujarPalmera(this.distanciaTotal - 500, this.alto - 50);
+            this.dibujarPalmera(this.distanciaTotal - 100, this.alto - 50);
+            this.dibujarPalmera(this.distanciaTotal + 200, this.alto - 50);
         }
 
         // --- OBJETOS ---
