@@ -107,6 +107,7 @@ export class JuegoViajeBYD {
         this.victoria = false;
         this.offsetX = 0;
         this.offsetY = 0;
+        this.turbos = [];
 
         let terrenoScaleY = 50;
         if(nivel === 'facil') {
@@ -144,6 +145,13 @@ export class JuegoViajeBYD {
                     this.recogerGasolina(a);
                 } else if (b.label === 'corazon' && (a === this.carBody || a === this.wheelA || a === this.wheelB)) {
                     this.recogerGasolina(b);
+                }
+
+                // Si toca un turbo
+                if (a.label === 'turbo' && (b === this.carBody || b === this.wheelA || b === this.wheelB)) {
+                    this.recogerTurbo(a);
+                } else if (b.label === 'turbo' && (a === this.carBody || a === this.wheelA || a === this.wheelB)) {
+                    this.recogerTurbo(b);
                 }
             });
         });
@@ -189,7 +197,7 @@ export class JuegoViajeBYD {
             this.World.add(this.world, rect);
             this.terrenoBlocks.push(rect);
 
-            // Generar gasolina (Corazones) más frecuente y cerca del piso
+            // Generar gasolina (Corazones)
             if (i > 10 && i % 12 === 0) {
                 let heart = this.Bodies.circle(x, blockY - 50, 20, {
                     isStatic: true,
@@ -198,6 +206,17 @@ export class JuegoViajeBYD {
                 });
                 this.World.add(this.world, heart);
                 this.corazones.push(heart);
+            }
+
+            // Generar Turbos (Rayos)
+            if (i > 20 && i % 25 === 0) {
+                let turbo = this.Bodies.circle(x + 50, blockY - 60, 15, {
+                    isStatic: true,
+                    isSensor: true,
+                    label: 'turbo'
+                });
+                this.World.add(this.world, turbo);
+                this.turbos.push(turbo);
             }
         }
 
@@ -258,10 +277,16 @@ export class JuegoViajeBYD {
     }
 
     recogerGasolina(corazonBody) {
-        this.gasolina += 40;
-        if(this.gasolina > 100) this.gasolina = 100;
+        this.gasolina = 100; // Recarga completa
         this.World.remove(this.world, corazonBody);
         this.corazones = this.corazones.filter(c => c !== corazonBody);
+    }
+
+    recogerTurbo(turboBody) {
+        // Empujón hacia adelante
+        this.Body.setVelocity(this.carBody, { x: this.carBody.velocity.x + 25, y: this.carBody.velocity.y - 5 });
+        this.World.remove(this.world, turboBody);
+        this.turbos = this.turbos.filter(t => t !== turboBody);
     }
 
     finJuego(motivo) {
@@ -379,7 +404,7 @@ export class JuegoViajeBYD {
         // Aplicar transformación de cámara para el mundo físico
         this.ctx.translate(-this.offsetX, -this.offsetY);
 
-        // --- TERRENO (Gradiente) ---
+        // --- TERRENO (Gradiente sin rectángulos) ---
         let gradientTerreno = this.ctx.createLinearGradient(0, this.alto - 200, 0, this.alto);
         if (progreso > 0.8) {
             gradientTerreno.addColorStop(0, '#F4E3A6');
@@ -390,15 +415,10 @@ export class JuegoViajeBYD {
         }
         this.ctx.fillStyle = gradientTerreno; 
 
-        this.ctx.lineWidth = 4;
-        this.ctx.strokeStyle = '#2E7D32';
-        if (progreso > 0.8) this.ctx.strokeStyle = '#C2B280';
-
         const camIzq = this.offsetX - 200;
         const camDer = this.offsetX + this.ancho + 200;
 
         for(let block of this.terrenoBlocks) {
-            // Solo dibujar los bloques visibles en la cámara
             if (block.position.x > camIzq && block.position.x < camDer) {
                 this.ctx.beginPath();
                 let p = block.vertices;
@@ -407,15 +427,46 @@ export class JuegoViajeBYD {
                     this.ctx.lineTo(p[j].x, p[j].y);
                 }
                 this.ctx.closePath();
+                // Solo llenamos, quitamos el stroke para evitar líneas rectangulares
                 this.ctx.fill();
-                this.ctx.stroke();
             }
         }
 
-        // --- CORAZONES DE GASOLINA ---
+        // Borde superior continuo para que se vea bonito (sin costuras)
+        this.ctx.beginPath();
+        let empezo = false;
+        for(let block of this.terrenoBlocks) {
+            if (block.position.x > camIzq && block.position.x < camDer) {
+                let p = block.vertices;
+                if(!empezo) {
+                    this.ctx.moveTo(p[0].x, p[0].y);
+                    empezo = true;
+                } else {
+                    this.ctx.lineTo(p[0].x, p[0].y);
+                }
+                this.ctx.lineTo(p[1].x, p[1].y);
+            }
+        }
+        this.ctx.lineWidth = 4;
+        this.ctx.strokeStyle = (progreso > 0.8) ? '#C2B280' : '#2E7D32';
+        this.ctx.stroke();
+
+        // --- DECORACIONES DE PLAYA ---
+        if (progreso > 0.7) {
+            this.dibujarPalmera(this.distanciaTotal - 500, this.alto - 120);
+            this.dibujarPalmera(this.distanciaTotal - 100, this.alto - 100);
+            this.dibujarPalmera(this.distanciaTotal + 200, this.alto - 80);
+        }
+
+        // --- OBJETOS ---
         for(let corazon of this.corazones) {
             if (corazon.position.x > camIzq && corazon.position.x < camDer) {
                 this.dibujarCorazon(corazon.position.x, corazon.position.y);
+            }
+        }
+        for(let turbo of this.turbos) {
+            if (turbo.position.x > camIzq && turbo.position.x < camDer) {
+                this.dibujarTurbo(turbo.position.x, turbo.position.y);
             }
         }
 
@@ -553,6 +604,56 @@ export class JuegoViajeBYD {
         this.ctx.shadowColor = '#ff4757';
         this.ctx.shadowBlur = 10;
         this.ctx.fill();
+        this.ctx.restore();
+    }
+
+    dibujarTurbo(x, y) {
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        this.ctx.fillStyle = '#ffdd59'; // Amarillo eléctrico
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, -15);
+        this.ctx.lineTo(8, -2);
+        this.ctx.lineTo(2, -2);
+        this.ctx.lineTo(10, 15);
+        this.ctx.lineTo(-6, 2);
+        this.ctx.lineTo(0, 2);
+        this.ctx.closePath();
+        this.ctx.fill();
+        
+        this.ctx.shadowColor = '#ffdd59';
+        this.ctx.shadowBlur = 15;
+        this.ctx.fill();
+        this.ctx.restore();
+    }
+
+    dibujarPalmera(x, y) {
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        
+        // Tronco
+        this.ctx.fillStyle = '#8B4513';
+        this.ctx.beginPath();
+        this.ctx.moveTo(-5, 0);
+        this.ctx.quadraticCurveTo(10, -50, 0, -100);
+        this.ctx.lineTo(5, -100);
+        this.ctx.quadraticCurveTo(15, -50, 5, 0);
+        this.ctx.fill();
+
+        // Hojas
+        this.ctx.fillStyle = '#228B22';
+        for(let i=0; i<5; i++) {
+            this.ctx.save();
+            this.ctx.translate(2, -100);
+            this.ctx.rotate(i * Math.PI * 0.4);
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, 0);
+            this.ctx.quadraticCurveTo(30, -20, 50, 0);
+            this.ctx.quadraticCurveTo(30, 10, 0, 0);
+            this.ctx.fill();
+            this.ctx.restore();
+        }
+        
         this.ctx.restore();
     }
 }
