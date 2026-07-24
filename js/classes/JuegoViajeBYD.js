@@ -281,8 +281,15 @@ export class JuegoViajeBYD {
     }
 
     recogerTurbo(turboBody) {
-        // Empujón hacia adelante
-        this.Body.setVelocity(this.carBody, { x: this.carBody.velocity.x + 25, y: this.carBody.velocity.y - 5 });
+        // Empujón hacia adelante más controlado (sin lanzarlo hacia arriba)
+        let nuevaVelX = this.carBody.velocity.x + 12;
+        if (nuevaVelX > 18) nuevaVelX = 18; // Limitar velocidad máxima
+        
+        // Empujar ligeramente hacia ABAJO para mantener las llantas en el suelo
+        let nuevaVelY = this.carBody.velocity.y + 1;
+
+        this.Body.setVelocity(this.carBody, { x: nuevaVelX, y: nuevaVelY });
+        
         this.World.remove(this.world, turboBody);
         this.turbos = this.turbos.filter(t => t !== turboBody);
     }
