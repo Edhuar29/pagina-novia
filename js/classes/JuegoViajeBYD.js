@@ -233,43 +233,37 @@ export class JuegoViajeBYD {
         const carX = 150;
         const carY = 0;
 
-        // Chasis
-        this.carBody = this.Bodies.rectangle(carX, carY, 110, 30, {
+        let wheelOpts = { 
+            friction: 1.0, 
+            frictionStatic: 10,
+            restitution: 0.1,
+            density: 0.05,
+            collisionFilter: { group: -1 } 
+        };
+        
+        // Llantas (más grandes y con mucha fricción para agarre)
+        this.wheelA = this.Bodies.circle(carX - 45, carY + 20, 20, wheelOpts);
+        this.wheelB = this.Bodies.circle(carX + 45, carY + 20, 20, wheelOpts);
+
+        // Chasis del coche (fricción 0 para que resbale si choca con la panza)
+        this.carBody = this.Bodies.rectangle(carX, carY, 120, 30, { 
+            chamfer: { radius: 15 }, // Más redondeado para no atascarse
+            density: 0.02,
+            friction: 0.0,
             collisionFilter: { group: -1 },
-            friction: 0.1,
-            density: 0.003,
             label: 'chasis'
         });
 
-        // Llantas (más densidad para que tengan tracción real)
-        this.wheelA = this.Bodies.circle(carX - 45, carY + 20, 18, {
-            collisionFilter: { group: -1 },
-            friction: 1.0, 
-            restitution: 0.1,
-            density: 0.005
-        });
-        
-        this.wheelB = this.Bodies.circle(carX + 45, carY + 20, 18, {
-            collisionFilter: { group: -1 },
-            friction: 1.0,
-            restitution: 0.1,
-            density: 0.005
-        });
-
-        // Unir piezas al chasis
+        // Suspensión (más rígida y alta para evitar raspar el suelo)
         let axelA = this.Constraint.create({
-            bodyB: this.carBody,
-            pointB: { x: -45, y: 15 },
-            bodyA: this.wheelA,
-            stiffness: 0.15, // Suspensión suave
-            damping: 0.05
+            bodyA: this.carBody, bodyB: this.wheelA,
+            pointA: { x: -40, y: 15 },
+            stiffness: 0.4, length: 20, damping: 0.1
         });
         let axelB = this.Constraint.create({
-            bodyB: this.carBody,
-            pointB: { x: 45, y: 15 },
-            bodyA: this.wheelB,
-            stiffness: 0.15, // Suspensión suave
-            damping: 0.05
+            bodyA: this.carBody, bodyB: this.wheelB,
+            pointA: { x: 40, y: 15 },
+            stiffness: 0.4, length: 20, damping: 0.1
         });
 
         this.car = this.Composite.create({
@@ -338,14 +332,20 @@ export class JuegoViajeBYD {
 
         // Físicas del carro (Motor)
         if(!this.gameOver && !this.victoria) {
-            const torque = 0.08;
-            if (this.gasPresionado) {
-                this.Body.setAngularVelocity(this.wheelA, Math.min(this.wheelA.angularVelocity + torque, 0.4));
-                this.Body.setAngularVelocity(this.wheelB, Math.min(this.wheelB.angularVelocity + torque, 0.4));
+            if (this.gasPresionado && this.gasolina > 0) {
+                // Aumentar la fuerza de aceleración
+                this.Body.setAngularVelocity(this.wheelA, 0.55);
+                this.Body.setAngularVelocity(this.wheelB, 0.55);
+                
+                // Ayuda extra con un pequeño empuje hacia adelante y arriba (como tracción 4x4)
+                this.Body.applyForce(this.carBody, this.carBody.position, { x: 0.002, y: -0.001 });
+                
+                this.gasolina -= 0.1;
             }
-            if (this.frenoPresionado) {
-                this.Body.setAngularVelocity(this.wheelA, Math.max(this.wheelA.angularVelocity - torque, -0.4));
-                this.Body.setAngularVelocity(this.wheelB, Math.max(this.wheelB.angularVelocity - torque, -0.4));
+            if (this.frenoPresionado && this.gasolina > 0) {
+                this.Body.setAngularVelocity(this.wheelA, -0.4);
+                this.Body.setAngularVelocity(this.wheelB, -0.4);
+                this.gasolina -= 0.1;
             }
         }
 
