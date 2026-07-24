@@ -131,21 +131,16 @@ export class JuegoViajeBYD {
         // 3. Construir Carro
         this.construirCarro();
 
-        // 4. Lógica de Colisiones (Recolectar corazones o Chocar cabeza)
+        // 4. Lógica de Colisiones (Recolectar corazones)
         this.Events.on(this.engine, 'collisionStart', (event) => {
             event.pairs.forEach(pair => {
                 const a = pair.bodyA;
                 const b = pair.bodyB;
                 
-                // Si el sensor de la cabeza toca el suelo = vuelco
-                if ((a === this.carHeadSensor && b.label === 'terreno') || (b === this.carHeadSensor && a.label === 'terreno')) {
-                    this.finJuego('vuelco');
-                }
-                
                 // Si toca un corazón de gasolina
-                if (a.label === 'corazon' && (b === this.carBody || b === this.wheelA || b === this.wheelB || b === this.carHeadSensor)) {
+                if (a.label === 'corazon' && (b === this.carBody || b === this.wheelA || b === this.wheelB)) {
                     this.recogerGasolina(a);
-                } else if (b.label === 'corazon' && (a === this.carBody || a === this.wheelA || a === this.wheelB || a === this.carHeadSensor)) {
+                } else if (b.label === 'corazon' && (a === this.carBody || a === this.wheelA || a === this.wheelB)) {
                     this.recogerGasolina(b);
                 }
             });
@@ -221,13 +216,6 @@ export class JuegoViajeBYD {
             label: 'chasis'
         });
 
-        // Sensor de Cabeza (Para detectar vuelcos)
-        this.carHeadSensor = this.Bodies.rectangle(carX, carY - 25, 60, 10, {
-            isSensor: true,
-            collisionFilter: { group: -1 },
-            label: 'headSensor'
-        });
-
         // Llantas (más densidad para que tengan tracción real)
         this.wheelA = this.Bodies.circle(carX - 45, carY + 20, 18, {
             collisionFilter: { group: -1 },
@@ -258,17 +246,10 @@ export class JuegoViajeBYD {
             stiffness: 0.15, // Suspensión suave
             damping: 0.05
         });
-        let headTie = this.Constraint.create({
-            bodyA: this.carBody,
-            bodyB: this.carHeadSensor,
-            pointB: {x:0,y:25},
-            stiffness: 1,
-            length: 0
-        });
 
         this.car = this.Composite.create({
-            bodies: [this.carBody, this.carHeadSensor, this.wheelA, this.wheelB],
-            constraints: [axelA, axelB, headTie]
+            bodies: [this.carBody, this.wheelA, this.wheelB],
+            constraints: [axelA, axelB]
         });
 
         this.World.add(this.world, this.car);
@@ -314,6 +295,14 @@ export class JuegoViajeBYD {
         if(this.carBody.position.x >= this.distanciaTotal && !this.gameOver) {
             this.victoria = true;
             this.uiControles.style.display = 'none';
+        }
+
+        // Detección de vuelco por ángulo
+        if (!this.gameOver && !this.victoria) {
+            // Si el ángulo pasa de ~110 grados, es que está de cabeza
+            if (Math.abs(this.carBody.angle) > Math.PI * 0.6) {
+                this.finJuego('vuelco');
+            }
         }
 
         // Físicas del carro (Motor)
