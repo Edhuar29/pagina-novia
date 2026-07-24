@@ -187,9 +187,9 @@ export class JuegoViajeBYD {
             this.World.add(this.world, rect);
             this.terrenoBlocks.push(rect);
 
-            // Generar gasolina (Corazones) cada cierto espacio
-            if (i > 15 && i % 25 === 0 && heightOffset < scaleY/2) {
-                let heart = this.Bodies.circle(x, blockY - 150, 20, {
+            // Generar gasolina (Corazones) más frecuente
+            if (i > 10 && i % 12 === 0) {
+                let heart = this.Bodies.circle(x, blockY - 120, 20, {
                     isStatic: true,
                     isSensor: true,
                     label: 'corazon'
@@ -332,13 +332,36 @@ export class JuegoViajeBYD {
 
         this.ctx.save();
         
-        // --- FONDO PARALLAX ---
+        // --- FONDO Y CIELO ---
         let progreso = this.carBody.position.x / this.distanciaTotal;
         if(progreso > 1) progreso = 1;
         if(progreso < 0) progreso = 0;
         
-        this.ctx.fillStyle = `rgba(135, 206, 235, ${1 - progreso*0.5})`; // Cielo se aclara/oscurece
+        // Gradiente de cielo
+        let gradientCielo = this.ctx.createLinearGradient(0, 0, 0, this.alto);
+        if (progreso > 0.8) {
+            // Atardecer en la playa
+            gradientCielo.addColorStop(0, '#FF7E5F');
+            gradientCielo.addColorStop(1, '#FEB47B');
+        } else {
+            // Día normal
+            gradientCielo.addColorStop(0, '#87CEEB');
+            gradientCielo.addColorStop(1, '#E0F6FF');
+        }
+        this.ctx.fillStyle = gradientCielo;
         this.ctx.fillRect(0, 0, this.ancho, this.alto);
+
+        // Montañas de fondo (Parallax lento)
+        this.ctx.fillStyle = (progreso > 0.8) ? 'rgba(255, 140, 100, 0.5)' : 'rgba(150, 200, 150, 0.5)';
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, this.alto);
+        let fondoOffsetX = this.offsetX * 0.2; // Movimiento más lento
+        for(let i=0; i <= this.ancho; i+=50) {
+            let mtY = this.alto - 150 + Math.sin((i + fondoOffsetX) * 0.01) * 50;
+            this.ctx.lineTo(i, mtY);
+        }
+        this.ctx.lineTo(this.ancho, this.alto);
+        this.ctx.fill();
 
         let solX = this.distanciaTotal - this.offsetX + 300;
         this.ctx.fillStyle = '#FFD700';
@@ -348,9 +371,16 @@ export class JuegoViajeBYD {
 
         this.ctx.translate(-this.offsetX, 0);
 
-        // --- TERRENO ---
-        this.ctx.fillStyle = '#4CAF50'; 
-        if (progreso > 0.8) this.ctx.fillStyle = '#EED690'; // Playa final
+        // --- TERRENO (Gradiente) ---
+        let gradientTerreno = this.ctx.createLinearGradient(0, this.alto - 200, 0, this.alto);
+        if (progreso > 0.8) {
+            gradientTerreno.addColorStop(0, '#F4E3A6');
+            gradientTerreno.addColorStop(1, '#D4B86A');
+        } else {
+            gradientTerreno.addColorStop(0, '#4CAF50');
+            gradientTerreno.addColorStop(1, '#2E7D32');
+        }
+        this.ctx.fillStyle = gradientTerreno; 
 
         this.ctx.lineWidth = 4;
         this.ctx.strokeStyle = '#2E7D32';
@@ -437,6 +467,12 @@ export class JuegoViajeBYD {
         this.ctx.roundRect(-25, -30, 25, 15, 3); // Trasera
         this.ctx.roundRect(5, -30, 20, 15, 3); // Delantera
         this.ctx.fill();
+
+        // Logo BYD
+        this.ctx.fillStyle = '#555';
+        this.ctx.font = 'bold 10px "Playfair Display", sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('BYD', -2, 5);
 
         // Pareja
         this.ctx.fillStyle = '#333'; // Él
