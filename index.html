@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <!-- Patrón de fondo (Ositos y corazones) -->
     <div class="patron-fondo"></div>
     
     <!-- Theme Toggle Button -->
@@ -157,6 +156,10 @@
                         <i class="fas fa-border-all"></i>
                         <h3>Tres en Raya</h3>
                     </div>
+                    <div class="juego-card arcade-card" id="btn-juego-byd">
+                        <i class="fas fa-car-side"></i>
+                        <h3>Viaje a la Playa</h3>
+                    </div>
                 </div>
 
                 <!-- Contenedores de juegos (ocultos por defecto) -->
@@ -186,6 +189,19 @@
                     <div class="tic-tablero">
                     </div>
                     <button class="btn-jugar" id="reset-tic" style="margin-top:15px;">Reiniciar</button>
+                    <button class="btn-cerrar-juego" style="margin-top:15px;">Cerrar Juego</button>
+                </div>
+
+                <div id="juego-contenedor-byd" class="juego-pantalla glass" style="display: none;">
+                    <h3>Viaje a la Playa 🚗🏖️</h3>
+                    <p class="juego-instrucciones">Toca la pantalla para saltar los obstáculos y llegar a la playa. Si chocas, volvemos a empezar.</p>
+                    <div class="niveles-byd" style="margin-bottom: 15px; display: flex; justify-content: center; gap: 10px;">
+                        <button class="btn-jugar nivel-btn" data-nivel="facil">Fácil</button>
+                        <button class="btn-jugar nivel-btn" data-nivel="medio">Medio</button>
+                        <button class="btn-jugar nivel-btn" data-nivel="dificil">Difícil</button>
+                    </div>
+                    <div class="progreso-viaje" style="font-weight: 600; color: var(--primary-color);">Progreso: <span id="progreso-byd">0</span>%</div>
+                    <canvas id="canvas-byd" width="600" height="250" style="background:#87CEEB; display:none; margin: 10px auto; border-radius:10px; max-width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.1);"></canvas>
                     <button class="btn-cerrar-juego" style="margin-top:15px;">Cerrar Juego</button>
                 </div>
 

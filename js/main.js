@@ -7,6 +7,7 @@ import { JuegosController } from './classes/JuegosController.js';
 import { JuegoTicTacToe } from './classes/JuegoTicTacToe.js';
 import { JuegoFlappyCorazon } from './classes/JuegoFlappyCorazon.js';
 import { JuegoAtrapaBesos } from './classes/JuegoAtrapaBesos.js';
+import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js';
 import { ThemeController } from './classes/ThemeController.js';
 
 // Cuando la página termine de cargar, inicializamos nuestras clases
@@ -38,5 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const ticTacToe = new JuegoTicTacToe();
     const flappy = new JuegoFlappyCorazon();
     const besos = new JuegoAtrapaBesos();
+    const byd = new JuegoViajeBYD();
 
 });

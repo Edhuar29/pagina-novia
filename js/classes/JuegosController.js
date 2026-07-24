@@ -7,6 +7,7 @@ export class JuegosController {
         this.btnBesos = document.getElementById('btn-juego-besos');
         this.btnFlappy = document.getElementById('btn-juego-flappy');
         this.btnTic = document.getElementById('btn-juego-tic');
+        this.btnByd = document.getElementById('btn-juego-byd');
         
         // Botones de cerrar
         this.btnsCerrar = document.querySelectorAll('.btn-cerrar-juego');
@@ -18,6 +19,7 @@ export class JuegosController {
         this.btnBesos.addEventListener('click', () => this.abrirJuego('juego-contenedor-besos'));
         this.btnFlappy.addEventListener('click', () => this.abrirJuego('juego-contenedor-flappy'));
         this.btnTic.addEventListener('click', () => this.abrirJuego('juego-contenedor-tic'));
+        if(this.btnByd) this.btnByd.addEventListener('click', () => this.abrirJuego('juego-contenedor-byd'));
 
         this.btnsCerrar.forEach(btn => {
             btn.addEventListener('click', () => this.cerrarJuegos());
