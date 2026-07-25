@@ -7,10 +7,10 @@ import { JuegosController } from './classes/JuegosController.js';
 import { JuegoTicTacToe } from './classes/JuegoTicTacToe.js';
 import { JuegoFlappyCorazon } from './classes/JuegoFlappyCorazon.js';
 import { JuegoAtrapaBesos } from './classes/JuegoAtrapaBesos.js';
-import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js?v=6';
+import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js?v=7';
 import { ThemeController } from './classes/ThemeController.js';
-import { SakuraTree } from './classes/SakuraTree.js?v=6';
-import { EspejoMagico } from './classes/EspejoMagico.js?v=6';
+import { SakuraTree } from './classes/SakuraTree.js?v=7';
+import { EspejoMagico } from './classes/EspejoMagico.js?v=7';
 
 // Cuando la página termine de cargar, inicializamos nuestras clases
 document.addEventListener('DOMContentLoaded', () => {

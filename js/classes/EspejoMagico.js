@@ -25,9 +25,14 @@ export class EspejoMagico {
     initBtnEvent() {
         document.getElementById('btn-nav-espejo').addEventListener('click', async (e) => {
             e.preventDefault();
-            // Cerrar otras vistas, que lo maneje el Navegador, pero forzamos esta
-            document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
-            document.getElementById('vista-espejo').classList.add('active');
+            // Cerrar otras vistas
+            document.querySelectorAll('.vista').forEach(v => {
+                v.classList.remove('active');
+                v.style.display = 'none';
+            });
+            const vistaEspejo = document.getElementById('vista-espejo');
+            vistaEspejo.style.display = 'block';
+            setTimeout(() => vistaEspejo.classList.add('active'), 50);
             
             // Ocultar barra de navegación inferior para el espejo
             document.querySelector('.bottom-nav').style.display = 'none';
@@ -38,8 +43,14 @@ export class EspejoMagico {
         this.btnCerrar.addEventListener('click', () => {
             this.detenerEspejo();
             // Restaurar navegación
-            document.getElementById('vista-espejo').classList.remove('active');
-            document.getElementById('vista-inicio').classList.add('active');
+            const vistaEspejo = document.getElementById('vista-espejo');
+            vistaEspejo.classList.remove('active');
+            vistaEspejo.style.display = 'none';
+            
+            const vistaInicio = document.getElementById('vista-inicio');
+            vistaInicio.style.display = 'block';
+            setTimeout(() => vistaInicio.classList.add('active'), 50);
+            
             document.querySelector('.bottom-nav').style.display = 'flex';
         });
     }
@@ -90,7 +101,7 @@ export class EspejoMagico {
         } catch (error) {
             console.error("Error al iniciar cámara o IA: ", error);
             alert("No pudimos encender tu cámara 😢. Asegúrate de dar permisos y no tener la cámara en uso por otra app. (Error: " + error.message + ")");
-            this.detenerEspejo();
+            this.btnCerrar.click();
         }
     }
 
