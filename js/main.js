@@ -7,10 +7,10 @@ import { JuegosController } from './classes/JuegosController.js';
 import { JuegoTicTacToe } from './classes/JuegoTicTacToe.js';
 import { JuegoFlappyCorazon } from './classes/JuegoFlappyCorazon.js';
 import { JuegoAtrapaBesos } from './classes/JuegoAtrapaBesos.js';
-import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js?v=9';
+import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js?v=10';
 import { ThemeController } from './classes/ThemeController.js';
-import { BonsaiTree } from './classes/BonsaiTree.js?v=9';
-import { EspejoMagico } from './classes/EspejoMagico.js?v=9';
+import { ArbolCorazones } from './classes/ArbolCorazones.js?v=10';
+import { EspejoMagico } from './classes/EspejoMagico.js?v=10';
 
 // Cuando la página termine de cargar, inicializamos nuestras clases
 document.addEventListener('DOMContentLoaded', () => {
@@ -40,8 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const ticTacToe = new JuegoTicTacToe();
     const flappy = new JuegoFlappyCorazon();
 
-    // Inicializar Bonsái (Planta del Amor)
-    const bonsaiTree = new BonsaiTree('sakuraCanvas', '2026-07-10T00:00:00'); 
+    // Inicializar Árbol de Corazones
+    const arbol = new ArbolCorazones('sakuraCanvas', '2026-07-10T00:00:00'); 
     const espejoMagico = new EspejoMagico();
 
     console.log("Aplicación iniciada correctamente.");
