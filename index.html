@@ -244,9 +244,8 @@
 
         <!-- VISTA: ESPEJO MÁGICO -->
         <div id="vista-espejo" class="vista" style="display: none; height: 100%; position: absolute; top: 0; left: 0; width: 100%; z-index: 100; background: #000;">
-            <button id="btn-cerrar-espejo" style="position: absolute; top: 20px; right: 20px; z-index: 15; padding: 0; border-radius: 50%; font-size: 1.5rem; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; backdrop-filter: blur(5px); cursor: pointer;"><i class="fas fa-times"></i></button>
             
-            <div id="espejo-ui" style="position: absolute; top: 20px; left: 20px; z-index: 15; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; backdrop-filter: blur(10px); display: none; border: 1px solid rgba(255,255,255,0.2); width: 140px;">
+            <div id="espejo-ui" style="position: absolute; top: 20px; left: 20px; z-index: 15; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 15px; backdrop-filter: blur(10px); display: none; border: 1px solid rgba(255,255,255,0.2); width: 160px;">
                 <div style="margin-bottom: 15px;">
                     <label style="color: white; font-size: 0.85rem; display: block; margin-bottom: 5px; font-weight: bold;"><i class="fas fa-shapes"></i> Patrón 3D</label>
                     <select id="espejo-pattern" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 8px; border-radius: 8px; width: 100%; outline: none; font-size: 0.9rem;">
@@ -254,13 +253,17 @@
                         <option value="heart" style="color: black;">Corazón</option>
                         <option value="cube" style="color: black;">Cubo</option>
                         <option value="galaxy" style="color: black;">Galaxia</option>
+                        <option value="tornado" style="color: black;">Tornado</option>
+                        <option value="dna" style="color: black;">ADN</option>
                     </select>
                 </div>
                 <div style="margin-bottom: 15px;">
                     <label style="color: white; font-size: 0.85rem; display: block; margin-bottom: 5px; font-weight: bold;"><i class="fas fa-palette"></i> Color</label>
                     <input type="color" id="espejo-color" value="#ff4757" style="border: none; background: transparent; width: 100%; height: 35px; cursor: pointer; padding: 0;">
                 </div>
-                <button id="btn-fullscreen-espejo" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 10px; border-radius: 8px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; font-weight: bold;"><i class="fas fa-expand"></i> Pantalla Completa</button>
+                <button id="btn-anim-espejo" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 10px; border-radius: 8px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px;"><i class="fas fa-pause"></i> Pausar</button>
+                <button id="btn-fullscreen-espejo" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 10px; border-radius: 8px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px;"><i class="fas fa-expand"></i> Pantalla Completa</button>
+                <button id="btn-cerrar-espejo" style="background: rgba(255,71,87,0.4); border: 1px solid rgba(255,71,87,0.8); color: white; padding: 8px 10px; border-radius: 8px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; font-weight: bold;"><i class="fas fa-times"></i> Salir del Espejo</button>
             </div>
 
             <div style="position: relative; width: 100%; height: 100%; overflow: hidden;">

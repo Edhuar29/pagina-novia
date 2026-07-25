@@ -6,12 +6,15 @@ export class ParticleSystem3D {
             return;
         }
 
+        this.isAnimating = true;
+        this.targetRotation = { x: 0, y: 0 };
+        this.currentRotation = { x: 0, y: 0 };
+        this.targetScale = 1.0;
+        this.currentScale = 1.0;
+        
         this.initThree();
         this.createParticles();
         this.bindEvents();
-        
-        this.targetPoint = new THREE.Vector3(0, 0, 0);
-        this.handState = 'open'; // 'open' | 'closed'
         
         this.animate = this.animate.bind(this);
         requestAnimationFrame(this.animate);
@@ -19,16 +22,16 @@ export class ParticleSystem3D {
 
     initThree() {
         this.scene = new THREE.Scene();
-        
-        // Camera setup
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.z = 5;
+        this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera.position.z = 6;
 
-        // Renderer setup
         this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimization
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.container.appendChild(this.renderer.domElement);
+
+        this.hologramGroup = new THREE.Group();
+        this.scene.add(this.hologramGroup);
 
         window.addEventListener('resize', () => {
             this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -38,50 +41,30 @@ export class ParticleSystem3D {
     }
 
     createParticles() {
-        this.particleCount = 5000;
+        this.particleCount = 6000;
         this.geometry = new THREE.BufferGeometry();
         
         this.positions = new Float32Array(this.particleCount * 3);
         this.basePositions = new Float32Array(this.particleCount * 3);
         this.velocities = new Float32Array(this.particleCount * 3);
         
-        // Initial random sphere
-        for (let i = 0; i < this.particleCount; i++) {
-            const i3 = i * 3;
-            const radius = 3 * Math.cbrt(Math.random());
-            const theta = Math.random() * 2 * Math.PI;
-            const phi = Math.acos(2 * Math.random() - 1);
-            
-            const x = radius * Math.sin(phi) * Math.cos(theta);
-            const y = radius * Math.sin(phi) * Math.sin(theta);
-            const z = radius * Math.cos(phi);
-            
-            this.positions[i3] = x;
-            this.positions[i3 + 1] = y;
-            this.positions[i3 + 2] = z;
-            
-            this.basePositions[i3] = x;
-            this.basePositions[i3 + 1] = y;
-            this.basePositions[i3 + 2] = z;
-
-            this.velocities[i3] = 0;
-            this.velocities[i3 + 1] = 0;
-            this.velocities[i3 + 2] = 0;
-        }
-
         this.geometry.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
         
         this.material = new THREE.PointsMaterial({
             color: new THREE.Color(document.getElementById('espejo-color')?.value || 0xff4757),
-            size: 0.05,
+            size: 0.06,
             transparent: true,
-            opacity: 0.8,
+            opacity: 0.9,
             blending: THREE.AdditiveBlending,
             depthWrite: false
         });
 
         this.points = new THREE.Points(this.geometry, this.material);
-        this.scene.add(this.points);
+        this.hologramGroup.add(this.points);
+
+        // Load initial pattern
+        const initialPattern = document.getElementById('espejo-pattern')?.value || 'sphere';
+        this.changePattern(initialPattern);
     }
 
     bindEvents() {
@@ -98,18 +81,12 @@ export class ParticleSystem3D {
                 this.changePattern(e.target.value);
             });
         }
-        
-        const fullscreenBtn = document.getElementById('btn-fullscreen-espejo');
-        if (fullscreenBtn) {
-            fullscreenBtn.addEventListener('click', () => {
-                const vista = document.getElementById('vista-espejo');
-                if (!document.fullscreenElement) {
-                    vista.requestFullscreen().catch(err => {
-                        console.error(`Error entering fullscreen: ${err.message}`);
-                    });
-                } else {
-                    document.exitFullscreen();
-                }
+
+        const btnAnim = document.getElementById('btn-anim-espejo');
+        if (btnAnim) {
+            btnAnim.addEventListener('click', () => {
+                this.isAnimating = !this.isAnimating;
+                btnAnim.innerHTML = this.isAnimating ? '<i class="fas fa-pause"></i> Pausar Animación' : '<i class="fas fa-play"></i> Reanudar Animación';
             });
         }
     }
@@ -133,30 +110,56 @@ export class ParticleSystem3D {
                 z = (Math.random() - 0.5) * 4;
             } 
             else if (patternName === 'heart') {
-                // Heart math equation
                 const t = (Math.random() - 0.5) * 2 * Math.PI;
                 const r = 0.15;
                 x = r * 16 * Math.pow(Math.sin(t), 3);
                 y = r * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-                z = (Math.random() - 0.5) * 1;
-                
-                // Add some volume
-                x += (Math.random() - 0.5) * 0.5;
-                y += (Math.random() - 0.5) * 0.5;
+                z = (Math.random() - 0.5) * 1.5;
             }
             else if (patternName === 'galaxy') {
                 const radius = Math.random() * 4;
-                const branches = 3;
-                const spinAngle = radius * 2;
+                const branches = 4;
+                const spinAngle = radius * 1.5;
                 const branchAngle = (i % branches) / branches * Math.PI * 2;
                 
-                const randomX = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 0.5;
-                const randomY = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 0.5;
-                const randomZ = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 0.5;
+                const randomSpread = (Math.random() - 0.5) * (Math.random() * 0.8);
 
-                x = Math.cos(branchAngle + spinAngle) * radius + randomX;
-                y = randomY;
-                z = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+                x = Math.cos(branchAngle + spinAngle) * radius + randomSpread;
+                y = (Math.random() - 0.5) * 0.5;
+                z = Math.sin(branchAngle + spinAngle) * radius + randomSpread;
+            }
+            else if (patternName === 'tornado') {
+                const height = (Math.random() - 0.5) * 6;
+                const radius = (height + 3) * 0.5 * Math.random();
+                const angle = height * 4 + Math.random() * Math.PI * 2;
+                x = Math.cos(angle) * radius;
+                y = height;
+                z = Math.sin(angle) * radius;
+            }
+            else if (patternName === 'dna') {
+                const height = (Math.random() - 0.5) * 6;
+                const angle = height * 2;
+                const strand = i % 2 === 0 ? 1 : -1;
+                const radius = 1.2;
+                x = Math.cos(angle + (strand === 1 ? 0 : Math.PI)) * radius;
+                y = height;
+                z = Math.sin(angle + (strand === 1 ? 0 : Math.PI)) * radius;
+                
+                // Add bridges between strands
+                if (Math.random() > 0.8) {
+                    const lerp = Math.random();
+                    const x1 = Math.cos(angle) * radius;
+                    const z1 = Math.sin(angle) * radius;
+                    const x2 = Math.cos(angle + Math.PI) * radius;
+                    const z2 = Math.sin(angle + Math.PI) * radius;
+                    x = x1 + (x2 - x1) * lerp;
+                    z = z1 + (z2 - z1) * lerp;
+                }
+                
+                // Add noise
+                x += (Math.random() - 0.5) * 0.2;
+                y += (Math.random() - 0.5) * 0.2;
+                z += (Math.random() - 0.5) * 0.2;
             }
 
             this.basePositions[i3] = x;
@@ -165,63 +168,65 @@ export class ParticleSystem3D {
         }
     }
 
-    updateHandState(normalizedX, normalizedY, handState) {
-        // Map normalized coordinates [0, 1] to 3D space
-        const fov = this.camera.fov * (Math.PI / 180);
-        const height = 2 * Math.tan(fov / 2) * this.camera.position.z;
-        const width = height * this.camera.aspect;
+    updateHandState(normalizedX, normalizedY, openness) {
+        // Iron Man Style Interaction
+        
+        // 1. Rotation mapping: Map hand X, Y to rotation angles
+        // normalizedX goes 0 to 1 (left to right) -> map to Y axis rotation (-PI to PI)
+        // normalizedY goes 0 to 1 (top to bottom) -> map to X axis rotation (-PI/2 to PI/2)
+        this.targetRotation.y = (normalizedX - 0.5) * Math.PI * 2;
+        this.targetRotation.x = (normalizedY - 0.5) * Math.PI;
 
-        const targetX = (normalizedX - 0.5) * width;
-        const targetY = -(normalizedY - 0.5) * height; // Y is flipped in 3D
-
-        this.targetPoint.set(targetX, targetY, 0);
-        this.handState = handState;
+        // 2. Scale mapping: Map hand openness (0 to 1) to scale (0.2 to 2.0)
+        // openness is distance between fingers. High distance = large scale.
+        // We expect openness to roughly be between 0.0 (closed) and 0.5 (wide open)
+        const mappedScale = 0.5 + (openness * 4); // If openness=0 -> 0.5. If 0.5 -> 2.5
+        this.targetScale = Math.max(0.2, Math.min(mappedScale, 3.0));
     }
 
     animate() {
         requestAnimationFrame(this.animate);
         
+        // Smoothly interpolate rotation and scale (Lerp)
+        this.currentRotation.x += (this.targetRotation.x - this.currentRotation.x) * 0.1;
+        this.currentRotation.y += (this.targetRotation.y - this.currentRotation.y) * 0.1;
+        this.currentScale += (this.targetScale - this.currentScale) * 0.1;
+
+        this.hologramGroup.rotation.x = this.currentRotation.x;
+        this.hologramGroup.rotation.y = this.currentRotation.y;
+        this.hologramGroup.scale.set(this.currentScale, this.currentScale, this.currentScale);
+
+        // Particle Physics
         const pos = this.geometry.attributes.position.array;
-        
+        const time = Date.now() * 0.001;
+
         for (let i = 0; i < this.particleCount; i++) {
             const i3 = i * 3;
-            
-            const px = pos[i3];
-            const py = pos[i3 + 1];
-            const pz = pos[i3 + 2];
-            
             const bx = this.basePositions[i3];
             const by = this.basePositions[i3 + 1];
             const bz = this.basePositions[i3 + 2];
 
-            let dx = 0, dy = 0, dz = 0;
+            let targetX = bx;
+            let targetY = by;
+            let targetZ = bz;
 
-            if (this.handState === 'closed') {
-                // Attract to hand target
-                dx = this.targetPoint.x - px;
-                dy = this.targetPoint.y - py;
-                dz = this.targetPoint.z - pz;
-                
-                // Add some noise
-                dx += (Math.random() - 0.5) * 2;
-                dy += (Math.random() - 0.5) * 2;
-                dz += (Math.random() - 0.5) * 2;
-
-            } else {
-                // Return to base pattern
-                dx = bx - px;
-                dy = by - py;
-                dz = bz - pz;
-                
-                if (document.getElementById('espejo-pattern')?.value === 'galaxy') {
-                    const sin = Math.sin(0.01);
-                    const cos = Math.cos(0.01);
-                    this.basePositions[i3] = bx * cos - bz * sin;
-                    this.basePositions[i3 + 2] = bz * cos + bx * sin;
-                }
+            // Optional idle animation (breathing/waving)
+            if (this.isAnimating) {
+                const noise = Math.sin(time * 2 + bx) * 0.1;
+                targetX += noise;
+                targetY += Math.cos(time * 2 + by) * 0.1;
+                targetZ += Math.sin(time * 2 + bz) * 0.1;
             }
 
-            // Spring physics
+            // Spring physics to return to base/target shape
+            const px = pos[i3];
+            const py = pos[i3 + 1];
+            const pz = pos[i3 + 2];
+
+            const dx = targetX - px;
+            const dy = targetY - py;
+            const dz = targetZ - pz;
+
             this.velocities[i3] += dx * 0.05;
             this.velocities[i3 + 1] += dy * 0.05;
             this.velocities[i3 + 2] += dz * 0.05;

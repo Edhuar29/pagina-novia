@@ -208,13 +208,9 @@ export class EspejoMagico {
         const thumbTip = landmarks[4];
         const pinchDist = Math.hypot(thumbTip.x - indexFingerTip.x, thumbTip.y - indexFingerTip.y);
 
-        // Actualizar el estado de la mano para Three.js
+        // Actualizar el estado de la mano para Three.js (Holograma Iron Man)
         if (this.particleSystem) {
-            let state = 'open';
-            if (pinchDist < 0.05 || distance < 0.2) {
-                state = 'closed';
-            }
-            this.particleSystem.updateHandState(1 - indexFingerTip.x, indexFingerTip.y, state);
+            this.particleSystem.updateHandState(1 - wrist.x, wrist.y, distance);
         }
 
         let shape = 'heart';
