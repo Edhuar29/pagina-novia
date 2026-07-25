@@ -179,13 +179,20 @@ export class ParticleSystem3D {
 
         // 1. Mano Principal (Primera mano detectada) -> Controla Movimiento (Traslación X/Y) y Escala
         const hand1 = landmarksArray[0];
+        const indexTip = hand1[8];
+        const thumbTip = hand1[4];
+        
+        // Calcular el punto medio entre el pulgar y el índice (como si estuviera sosteniendo el objeto)
+        const centerX = (indexTip.x + thumbTip.x) / 2;
+        const centerY = (indexTip.y + thumbTip.y) / 2;
+
         const wrist1 = hand1[0];
         const middle1 = hand1[12];
         const distance1 = Math.hypot(middle1.x - wrist1.x, middle1.y - wrist1.y);
 
-        // Mapear X e Y de la muñeca a la posición en el espacio 3D (Cámara -4 a 4)
-        this.targetPosition.x = (0.5 - wrist1.x) * 8; // Invertido porque la cámara actúa como espejo
-        this.targetPosition.y = (0.5 - wrist1.y) * 6;
+        // Mapear X e Y de las yemas de los dedos a la posición en el espacio 3D (Cámara -4 a 4)
+        this.targetPosition.x = (0.5 - centerX) * 8; // Invertido porque la cámara actúa como espejo
+        this.targetPosition.y = (0.5 - centerY) * 6;
 
         // Escala controlada por la apertura de la mano
         const mappedScale = 0.3 + (distance1 * 2); // Si distance=0 -> 0.3. Si 0.4 -> 1.1

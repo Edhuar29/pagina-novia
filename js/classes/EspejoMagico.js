@@ -81,7 +81,7 @@ export class EspejoMagico {
                 document.getElementById('espejo-ui').style.display = 'block';
             }
 
-            const musicPlayer = document.getElementById('music-player');
+            const musicPlayer = document.querySelector('.music-player');
             if (musicPlayer) musicPlayer.classList.add('espejo-mode');
             this.video.muted = true; // REQUERIDO para móviles
             
@@ -139,7 +139,7 @@ export class EspejoMagico {
         const ui = document.getElementById('espejo-ui');
         if (ui) ui.style.display = 'none';
         
-        const musicPlayer = document.getElementById('music-player');
+        const musicPlayer = document.querySelector('.music-player');
         if (musicPlayer) musicPlayer.classList.remove('espejo-mode');
         
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
