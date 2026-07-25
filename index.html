@@ -244,11 +244,7 @@
 
         <!-- VISTA: ESPEJO MÁGICO -->
         <div id="vista-espejo" class="vista" style="display: none; height: 100%; position: absolute; top: 0; left: 0; width: 100%; z-index: 100; background: #000;">
-            <div style="position: absolute; top: 15px; width: 100%; text-align: center; z-index: 10;">
-                <h2 style="color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Espejo Mágico ✨</h2>
-                <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">Mueve tus manos frente a la cámara</p>
-                <button id="btn-cerrar-espejo" class="btn-jugar" style="margin-top: 10px; font-size: 0.8rem; padding: 5px 15px;">Cerrar Espejo</button>
-            </div>
+            <button id="btn-cerrar-espejo" style="position: absolute; top: 20px; right: 20px; z-index: 10; padding: 0; border-radius: 50%; font-size: 1.5rem; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.2); color: white; display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; backdrop-filter: blur(5px); cursor: pointer;"><i class="fas fa-times"></i></button>
             
             <div style="position: relative; width: 100%; height: 100%; overflow: hidden;">
                 <!-- Video invisible pero usado para MediaPipe -->
@@ -290,6 +286,6 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <!-- Scripts -->
-    <script type="module" src="js/main.js?v=7"></script>
+    <script type="module" src="js/main.js?v=8"></script>
 </body>
 </html>

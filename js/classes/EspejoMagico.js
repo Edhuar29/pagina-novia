@@ -75,6 +75,7 @@ export class EspejoMagico {
                     resolve(this.video);
                 };
             });
+            this.resize();
             await this.video.play();
 
             // Cargar modelo de MediaPipe
@@ -113,8 +114,13 @@ export class EspejoMagico {
     }
 
     resize() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        if (this.video && this.video.videoWidth > 0) {
+            this.canvas.width = this.video.videoWidth;
+            this.canvas.height = this.video.videoHeight;
+        } else {
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+        }
     }
 
     async renderLoop() {
