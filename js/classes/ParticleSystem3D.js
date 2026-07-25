@@ -4,15 +4,15 @@ export class ParticleSystem3D {
         if (!this.container || typeof THREE === 'undefined') {
             console.error('Three.js or container not found');
             return;
-        }
-
         this.isAnimating = true;
         this.targetPosition = { x: 0, y: 0 };
         this.currentPosition = { x: 0, y: 0 };
+        this.lastPosition = { x: 0, y: 0 }; // Para inercia/trails
         this.targetRotation = { x: 0, y: 0 };
         this.currentRotation = { x: 0, y: 0 };
         this.targetScale = 1.0;
         this.currentScale = 1.0;
+        this.currentPattern = 'sphere';
         
         this.initThree();
         this.createParticles();
@@ -94,6 +94,7 @@ export class ParticleSystem3D {
     }
 
     changePattern(patternName) {
+        this.currentPattern = patternName;
         for (let i = 0; i < this.particleCount; i++) {
             const i3 = i * 3;
             let x = 0, y = 0, z = 0;
@@ -163,6 +164,31 @@ export class ParticleSystem3D {
                 y += (Math.random() - 0.5) * 0.1;
                 z += (Math.random() - 0.5) * 0.1;
             }
+            else if (patternName === 'saturn') {
+                if (Math.random() > 0.4) {
+                    // Planet
+                    const radius = 0.8 * Math.cbrt(Math.random());
+                    const theta = Math.random() * 2 * Math.PI;
+                    const phi = Math.acos(2 * Math.random() - 1);
+                    x = radius * Math.sin(phi) * Math.cos(theta);
+                    y = radius * Math.sin(phi) * Math.sin(theta);
+                    z = radius * Math.cos(phi);
+                } else {
+                    // Rings
+                    const radius = 1.2 + Math.random() * 1.2;
+                    const angle = Math.random() * Math.PI * 2;
+                    x = Math.cos(angle) * radius;
+                    y = (Math.random() - 0.5) * 0.1;
+                    z = Math.sin(angle) * radius;
+                }
+            }
+            else if (patternName === 'blackhole') {
+                const radius = 0.5 + Math.pow(Math.random(), 2) * 3;
+                const angle = Math.random() * Math.PI * 2;
+                x = Math.cos(angle) * radius;
+                z = Math.sin(angle) * radius;
+                y = (Math.random() - 0.5) * (0.3 / radius);
+            }
 
             this.basePositions[i3] = x;
             this.basePositions[i3 + 1] = y;
@@ -217,9 +243,15 @@ export class ParticleSystem3D {
             this.targetRotation.y += 0.005;
         }
 
-        // Interpolación suave para posiciones, rotaciones y escalas (Lerp)
+            // Interpolación suave para posiciones, rotaciones y escalas (Lerp)
         this.currentPosition.x += (this.targetPosition.x - this.currentPosition.x) * 0.1;
         this.currentPosition.y += (this.targetPosition.y - this.currentPosition.y) * 0.1;
+
+        // Calcular Inercia (Trails) de los movimientos bruscos
+        const velX = this.currentPosition.x - this.lastPosition.x;
+        const velY = this.currentPosition.y - this.lastPosition.y;
+        this.lastPosition.x = this.currentPosition.x;
+        this.lastPosition.y = this.currentPosition.y;
 
         this.currentRotation.x += (this.targetRotation.x - this.currentRotation.x) * 0.1;
         this.currentRotation.y += (this.targetRotation.y - this.currentRotation.y) * 0.1;
@@ -234,6 +266,9 @@ export class ParticleSystem3D {
         // Particle Physics
         const pos = this.geometry.attributes.position.array;
         const time = Date.now() * 0.001;
+
+        // Velocidad combinada para los trails
+        const moveSpeed = Math.hypot(velX, velY);
 
         for (let i = 0; i < this.particleCount; i++) {
             const i3 = i * 3;
@@ -251,6 +286,22 @@ export class ParticleSystem3D {
                 targetX += noise;
                 targetY += Math.cos(time * 2 + by) * 0.1;
                 targetZ += Math.sin(time * 2 + bz) * 0.1;
+
+                // Animación de Latido para el Corazón
+                if (this.currentPattern === 'heart') {
+                    const beat = Math.pow(Math.sin(time * 3), 4) * 0.2;
+                    targetX *= (1 + beat);
+                    targetY *= (1 + beat);
+                    targetZ *= (1 + beat);
+                }
+                
+                // Rotación espiral para agujero negro
+                if (this.currentPattern === 'blackhole') {
+                    const r = Math.hypot(bx, bz);
+                    const spin = time * (2.0 / (r + 0.5));
+                    targetX = bx * Math.cos(spin) - bz * Math.sin(spin);
+                    targetZ = bx * Math.sin(spin) + bz * Math.cos(spin);
+                }
             }
 
             // Spring physics to return to base/target shape
@@ -258,15 +309,32 @@ export class ParticleSystem3D {
             const py = pos[i3 + 1];
             const pz = pos[i3 + 2];
 
+            // Inercia (Stardust Trail): Al mover la mano, algunas partículas se quedan atrás
+            if (moveSpeed > 0.05 && Math.random() > 0.5) {
+                // Inversamente proporcional al movimiento para dejarlas atrás
+                this.velocities[i3] -= velX * 2 * Math.random();
+                this.velocities[i3 + 1] -= velY * 2 * Math.random();
+            }
+
             const dx = targetX - px;
             const dy = targetY - py;
             const dz = targetZ - pz;
+
+            // Fuerza magnética (física reactiva). px, py, pz son relativos al centro (la mano).
+            // Si las partículas están muy cerca del centro, las empujamos.
+            const distToCenter = Math.hypot(px, py, pz);
+            if (moveSpeed > 0.02 && distToCenter < 0.8) {
+                const force = (0.8 - distToCenter) * 0.5;
+                this.velocities[i3] += (px / distToCenter) * force;
+                this.velocities[i3 + 1] += (py / distToCenter) * force;
+                this.velocities[i3 + 2] += (pz / distToCenter) * force;
+            }
 
             this.velocities[i3] += dx * 0.05;
             this.velocities[i3 + 1] += dy * 0.05;
             this.velocities[i3 + 2] += dz * 0.05;
 
-            // Damping
+            // Damping (fricción)
             this.velocities[i3] *= 0.8;
             this.velocities[i3 + 1] *= 0.8;
             this.velocities[i3 + 2] *= 0.8;
