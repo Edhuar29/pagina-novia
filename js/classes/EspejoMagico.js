@@ -55,13 +55,14 @@ export class EspejoMagico {
                 audio: false
             });
             this.video.srcObject = this.stream;
+            this.video.muted = true; // REQUERIDO para móviles
             
             await new Promise((resolve) => {
                 this.video.onloadedmetadata = () => {
                     resolve(this.video);
                 };
             });
-            this.video.play();
+            await this.video.play();
 
             // Cargar modelo de MediaPipe
             if (!this.handLandmarker) {
@@ -86,7 +87,7 @@ export class EspejoMagico {
 
         } catch (error) {
             console.error("Error al iniciar cámara o IA: ", error);
-            alert("No pudimos encender tu cámara 😢. ¡Necesitas darle permiso!");
+            alert("No pudimos encender tu cámara 😢. Asegúrate de dar permisos y no tener la cámara en uso por otra app. (Error: " + error.message + ")");
             this.detenerEspejo();
         }
     }

@@ -77,7 +77,7 @@ export class SakuraTree {
     branch(x, y, len, angle, level) {
         if (level === 0) {
             // Dibujar flor en la punta
-            this.drawFlower(x, y, len * 0.5);
+            this.drawFlower(x, y, len * 0.8 + 2);
             return;
         }
 
@@ -87,40 +87,77 @@ export class SakuraTree {
         const endX = x + Math.cos(angle) * len;
         const endY = y + Math.sin(angle) * len;
         
-        this.ctx.lineTo(endX, endY);
+        // Curvatura aleatoria para más realismo
+        const curveOffset = (Math.random() - 0.5) * len * 0.2;
+        const cpX = x + Math.cos(angle + 0.2) * (len / 2) + curveOffset;
+        const cpY = y + Math.sin(angle + 0.2) * (len / 2) + curveOffset;
+        
+        this.ctx.quadraticCurveTo(cpX, cpY, endX, endY);
         
         // El grosor disminuye con el nivel
-        this.ctx.lineWidth = level * 1.5;
-        this.ctx.strokeStyle = '#4A3728'; // Color tronco
+        this.ctx.lineWidth = Math.max(level * 1.8, 0.5);
+        
+        // Color más realista (marrón oscuro con variaciones)
+        const woodColor = 40 + Math.random() * 20;
+        this.ctx.strokeStyle = \`rgb(\${woodColor}, \${woodColor - 10}, 20)\`;
         this.ctx.stroke();
 
         // Recursión
-        // Las ramas se encogen un 75%
-        const newLen = len * 0.75;
-        // Ángulo de apertura de las ramas
-        const spread = 0.4; 
+        // Las ramas se encogen un 75% a 85%
+        const shrink = 0.7 + Math.random() * 0.15;
+        const newLen = len * shrink;
+        // Ángulo de apertura de las ramas (aleatorio)
+        const spread1 = 0.2 + Math.random() * 0.3; 
+        const spread2 = 0.2 + Math.random() * 0.3; 
         
-        this.branch(endX, endY, newLen, angle - spread, level - 1);
-        this.branch(endX, endY, newLen, angle + spread, level - 1);
+        this.branch(endX, endY, newLen, angle - spread1, level - 1);
+        this.branch(endX, endY, newLen, angle + spread2, level - 1);
+        
+        // A veces añade una pequeña rama extra (para más densidad)
+        if (Math.random() > 0.6 && level > 2) {
+            this.branch(endX, endY, newLen * 0.6, angle + (Math.random() - 0.5), level - 2);
+        }
     }
 
     drawFlower(x, y, size) {
-        this.ctx.fillStyle = 'rgba(255, 183, 197, 0.8)'; // Rosa sakura
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        
+        // 5 pétalos
+        const petals = 5;
+        this.ctx.fillStyle = 'rgba(255, 183, 197, 0.85)';
+        for (let i = 0; i < petals; i++) {
+            this.ctx.rotate((Math.PI * 2) / petals);
+            this.ctx.beginPath();
+            // Forma de pétalo de sakura real (como un óvalo cortado en la punta)
+            this.ctx.moveTo(0, 0);
+            this.ctx.quadraticCurveTo(-size, -size, 0, -size * 1.5);
+            this.ctx.quadraticCurveTo(size, -size, 0, 0);
+            this.ctx.fill();
+        }
+        
+        // Centro de la flor
+        this.ctx.fillStyle = 'rgba(220, 100, 120, 0.9)';
         this.ctx.beginPath();
-        this.ctx.arc(x, y, Math.max(size, 3), 0, Math.PI * 2);
+        this.ctx.arc(0, 0, size * 0.2, 0, Math.PI * 2);
         this.ctx.fill();
+        
+        this.ctx.restore();
     }
 
     drawPetals() {
-        this.ctx.fillStyle = 'rgba(255, 183, 197, 0.9)';
         this.petalos.forEach(p => {
             this.ctx.save();
             this.ctx.translate(p.x, p.y);
             this.ctx.rotate(p.angle);
             
-            // Dibujar pétalo (un óvalo ligeramente deformado)
+            // Dibujar pétalo realista individual cayendo
+            this.ctx.fillStyle = 'rgba(255, 183, 197, 0.9)';
             this.ctx.beginPath();
-            this.ctx.ellipse(0, 0, p.size, p.size * 0.6, 0, 0, Math.PI * 2);
+            let s = p.size;
+            this.ctx.moveTo(0, 0);
+            this.ctx.quadraticCurveTo(-s, -s, 0, -s * 1.5);
+            this.ctx.quadraticCurveTo(s, -s, 0, 0);
             this.ctx.fill();
             
             this.ctx.restore();
@@ -131,8 +168,8 @@ export class SakuraTree {
             p.angle += p.spin;
 
             // Reiniciar si sale de la pantalla
-            if (p.y > this.canvas.height) {
-                p.y = -10;
+            if (p.y > this.canvas.height + 20) {
+                p.y = -20;
                 p.x = Math.random() * this.canvas.width;
             }
         });
