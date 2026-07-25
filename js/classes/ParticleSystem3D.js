@@ -4,6 +4,8 @@ export class ParticleSystem3D {
         if (!this.container || typeof THREE === 'undefined') {
             console.error('Three.js or container not found');
             return;
+        }
+
         this.isAnimating = true;
         this.targetPosition = { x: 0, y: 0 };
         this.currentPosition = { x: 0, y: 0 };
@@ -208,21 +210,34 @@ export class ParticleSystem3D {
         const indexTip = hand1[8];
         const thumbTip = hand1[4];
         
-        // Calcular el punto medio entre el pulgar y el índice (como si estuviera sosteniendo el objeto)
-        const centerX = (indexTip.x + thumbTip.x) / 2;
-        const centerY = (indexTip.y + thumbTip.y) / 2;
+        // Centro entre el índice y el pulgar para "sostener" el objeto
+        const midX = (indexTip.x + thumbTip.x) / 2;
+        const midY = (indexTip.y + thumbTip.y) / 2;
 
+        // Calcular las dimensiones exactas del plano visible en z=0
+        const distance = this.camera.position.z;
+        const vFov = (this.camera.fov * Math.PI) / 180;
+        const planeHeight = 2 * Math.tan(vFov / 2) * distance;
+        const planeWidth = planeHeight * this.camera.aspect;
+        
+        // Mapear coordenadas (de 0-1 a sistema Three.js)
+        // NOTA: midX se invierte porque el espejo (video) está volteado horizontalmente.
+        this.targetPosition.x = -(midX - 0.5) * planeWidth;
+        this.targetPosition.y = -(midY - 0.5) * planeHeight;
+
+        // Rotación manipulable: El objeto gira según la posición de la mano y su inclinación
         const wrist1 = hand1[0];
+        const handAngle = Math.atan2(indexTip.y - wrist1.y, indexTip.x - wrist1.x);
+        this.targetRotation.z = -handAngle - Math.PI / 2; // Compensar para que apunte hacia arriba
+        this.targetRotation.y = -(midX - 0.5) * Math.PI * 2; // Girar de lado a lado
+        this.targetRotation.x = (midY - 0.5) * Math.PI; // Girar arriba/abajo
+
         const middle1 = hand1[12];
         const distance1 = Math.hypot(middle1.x - wrist1.x, middle1.y - wrist1.y);
 
-        // Mapear X e Y de las yemas de los dedos a la posición en el espacio 3D (Cámara -4 a 4)
-        this.targetPosition.x = (0.5 - centerX) * 8; // Invertido porque la cámara actúa como espejo
-        this.targetPosition.y = (0.5 - centerY) * 6;
-
         // Escala controlada por la apertura de la mano
-        const mappedScale = 0.3 + (distance1 * 2); // Si distance=0 -> 0.3. Si 0.4 -> 1.1
-        this.targetScale = Math.max(0.1, Math.min(mappedScale, 1.8));
+        const mappedScale = 0.2 + (distance1 * 1.2); 
+        this.targetScale = Math.max(0.1, Math.min(mappedScale, 1.2));
 
         // 2. Mano Secundaria (Segunda mano detectada) -> Controla Rotación (Giro X/Y)
         if (landmarksArray.length > 1) {
