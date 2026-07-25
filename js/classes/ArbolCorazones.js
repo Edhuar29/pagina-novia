@@ -42,6 +42,11 @@ export class ArbolCorazones {
     }
 
     dibujarArbolAcuarela() {
+        // Guardar random original y usar generador con semilla fija (previene que el árbol cambie de forma al cambiar tema)
+        const originalRandom = Math.random;
+        this.seedRandom(12345);
+        Math.random = () => this.random();
+
         const ctx = this.treeCtx;
         ctx.clearRect(0, 0, this.treeCanvas.width, this.treeCanvas.height);
 
@@ -57,9 +62,10 @@ export class ArbolCorazones {
         this.corazonesEstaticos = []; // Resetear para recalcular posiciones
 
         // Tronco (Gris claro en modo oscuro, casi negro en modo claro)
-        const crecimiento = Math.min(this.diasJuntos / 10, 60);
-        const length = 110 + crecimiento; // Más largo para que no quede amontonado abajo
-        const thickness = 12 + Math.min(this.diasJuntos / 100, 8); 
+        // El crecimiento es notable con los días juntos
+        const crecimiento = Math.min(this.diasJuntos / 5, 80); // Crecimiento más rápido
+        const length = 100 + crecimiento; 
+        const thickness = 10 + Math.min(this.diasJuntos / 30, 15); // Engrosa con los días
         
         // Ramas y tronco principal
         this.dibujarRama(ctx, startX, startY, length, -Math.PI / 2, thickness, 0, isDark);
@@ -70,6 +76,23 @@ export class ArbolCorazones {
         this.corazonesEstaticos.forEach(c => {
             this.dibujarCorazonAcuarela(ctx, c.x, c.y, c.size, c.color, c.angle, c.opacity);
         });
+
+        // Restaurar random original para las animaciones
+        Math.random = originalRandom;
+    }
+
+    seedRandom(seed) {
+        this.m_w = seed;
+        this.m_z = 987654321;
+        this.mask = 0xffffffff;
+    }
+    
+    random() {
+        this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & this.mask;
+        this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & this.mask;
+        let result = ((this.m_z << 16) + this.m_w) & this.mask;
+        result /= 4294967296;
+        return result + 0.5;
     }
 
     dibujarSuelo(ctx, x, y, isDark) {
