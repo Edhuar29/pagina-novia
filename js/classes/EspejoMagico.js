@@ -1,5 +1,5 @@
 import { FilesetResolver, HandLandmarker } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm';
-import { ParticleSystem3D } from './ParticleSystem3D.js?v=20';
+import { ParticleSystem3D } from './ParticleSystem3D.js';
 
 export class EspejoMagico {
     constructor() {

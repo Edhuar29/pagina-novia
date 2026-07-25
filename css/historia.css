@@ -281,7 +281,6 @@
     .timeline-item:nth-child(even) {
         left: 0;
     }
-}
     .timeline-content {
         width: 100%;
     }

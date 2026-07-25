@@ -1,16 +1,16 @@
-import { ReproductorMusical } from './classes/ReproductorMusical.js?v=20';
-import { AnimadorScroll } from './classes/AnimadorScroll.js?v=20';
-import { ContadorAmor } from './classes/ContadorAmor.js?v=20';
-import { BoletoSorpresa } from './classes/BoletoSorpresa.js?v=20';
-import { Navegacion } from './classes/Navegacion.js?v=20';
-import { JuegosController } from './classes/JuegosController.js?v=20';
-import { JuegoTicTacToe } from './classes/JuegoTicTacToe.js?v=20';
-import { JuegoFlappyCorazon } from './classes/JuegoFlappyCorazon.js?v=20';
-import { JuegoAtrapaBesos } from './classes/JuegoAtrapaBesos.js?v=20';
-import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js?v=20';
-import { ThemeController } from './classes/ThemeController.js?v=20';
-import { ArbolCorazones } from './classes/ArbolCorazones.js?v=20';
-import { EspejoMagico } from './classes/EspejoMagico.js?v=20';
+import { ReproductorMusical } from './classes/ReproductorMusical.js';
+import { AnimadorScroll } from './classes/AnimadorScroll.js';
+import { ContadorAmor } from './classes/ContadorAmor.js';
+import { BoletoSorpresa } from './classes/BoletoSorpresa.js';
+import { Navegacion } from './classes/Navegacion.js';
+import { JuegosController } from './classes/JuegosController.js';
+import { JuegoTicTacToe } from './classes/JuegoTicTacToe.js';
+import { JuegoFlappyCorazon } from './classes/JuegoFlappyCorazon.js';
+import { JuegoAtrapaBesos } from './classes/JuegoAtrapaBesos.js';
+import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js';
+import { ThemeController } from './classes/ThemeController.js';
+import { ArbolCorazones } from './classes/ArbolCorazones.js';
+import { EspejoMagico } from './classes/EspejoMagico.js';
 
 // Cuando la página termine de cargar, inicializamos nuestras clases
 document.addEventListener('DOMContentLoaded', () => {
