@@ -22,8 +22,8 @@
 }
 
 .music-player.espejo-mode {
-    bottom: auto;
-    top: 20px;
+    top: auto;
+    bottom: max(20px, env(safe-area-inset-bottom));
     left: auto;
     right: 20px;
     transform: none;
