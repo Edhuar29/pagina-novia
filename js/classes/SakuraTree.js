@@ -110,7 +110,7 @@ export class SakuraTree {
         
         // Color más realista (marrón oscuro con variaciones)
         const woodColor = 40 + Math.random() * 20;
-        ctx.strokeStyle = \`rgb(\${woodColor}, \${woodColor - 10}, 20)\`;
+        ctx.strokeStyle = `rgb(${woodColor}, ${woodColor - 10}, 20)`;
         ctx.stroke();
 
         // Recursión
