@@ -48,18 +48,21 @@ export class ArbolCorazones {
         const startX = this.treeCanvas.width / 2;
         const startY = this.treeCanvas.height - 30;
 
-        // Dibujar el suelo de acuarela
-        this.dibujarSuelo(ctx, startX, startY);
+        // Detectar si el modo oscuro está activo
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        // Dibujar el suelo de acuarela (Más sutil en modo oscuro)
+        this.dibujarSuelo(ctx, startX, startY, isDark);
 
         this.corazonesEstaticos = []; // Resetear para recalcular posiciones
 
-        // Tronco (Gris muy oscuro / Negro)
+        // Tronco (Gris claro en modo oscuro, casi negro en modo claro)
         const crecimiento = Math.min(this.diasJuntos / 10, 60);
-        const length = 90 + crecimiento; 
-        const thickness = 15 + Math.min(this.diasJuntos / 100, 10); 
+        const length = 110 + crecimiento; // Más largo para que no quede amontonado abajo
+        const thickness = 12 + Math.min(this.diasJuntos / 100, 8); 
         
         // Ramas y tronco principal
-        this.dibujarRama(ctx, startX, startY, length, -Math.PI / 2, thickness, 0);
+        this.dibujarRama(ctx, startX, startY, length, -Math.PI / 2, thickness, 0, isDark);
         
         // Pintar todos los corazones (follaje) que se registraron en las ramas
         // Ordenarlos aleatoriamente para mezclar colores
@@ -69,23 +72,29 @@ export class ArbolCorazones {
         });
     }
 
-    dibujarSuelo(ctx, x, y) {
+    dibujarSuelo(ctx, x, y, isDark) {
         // Suelo mancha de acuarela roja/rosa
-        const grad = ctx.createRadialGradient(x, y + 10, 10, x, y + 10, 150);
-        grad.addColorStop(0, 'rgba(128, 15, 47, 0.4)'); // Oscuro centro
-        grad.addColorStop(0.5, 'rgba(255, 77, 109, 0.2)');
+        const grad = ctx.createRadialGradient(x, y + 10, 10, x, y + 10, 180);
+        
+        if (isDark) {
+            grad.addColorStop(0, 'rgba(128, 15, 47, 0.2)'); // Más transparente
+            grad.addColorStop(0.5, 'rgba(255, 77, 109, 0.1)');
+        } else {
+            grad.addColorStop(0, 'rgba(128, 15, 47, 0.4)');
+            grad.addColorStop(0.5, 'rgba(255, 77, 109, 0.2)');
+        }
         grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
         ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.ellipse(x, y + 10, 150, 20, 0, 0, Math.PI * 2);
+        ctx.ellipse(x, y + 10, 180, 25, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // Trazos de pasto
-        ctx.strokeStyle = 'rgba(128, 15, 47, 0.5)';
+        ctx.strokeStyle = isDark ? 'rgba(255, 153, 170, 0.3)' : 'rgba(128, 15, 47, 0.5)';
         ctx.lineWidth = 1.5;
-        for (let i = 0; i < 30; i++) {
-            const px = x + (Math.random() - 0.5) * 200;
+        for (let i = 0; i < 40; i++) {
+            const px = x + (Math.random() - 0.5) * 250;
             const py = y + 5 + Math.random() * 10;
             ctx.beginPath();
             ctx.moveTo(px, py);
@@ -94,14 +103,14 @@ export class ArbolCorazones {
         }
     }
 
-    dibujarRama(ctx, x, y, length, angle, thickness, depth) {
+    dibujarRama(ctx, x, y, length, angle, thickness, depth, isDark) {
         if (depth > 6 || thickness < 0.5) return;
 
         const endX = x + Math.cos(angle) * length;
         const endY = y + Math.sin(angle) * length;
 
-        // Estilo de tinta / acuarela negra para el tronco
-        ctx.strokeStyle = '#1a1a1a';
+        // Estilo de tinta / acuarela negra para el tronco, más claro en modo oscuro
+        ctx.strokeStyle = isDark ? '#b0b0b0' : '#1a1a1a';
         ctx.lineWidth = thickness;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
@@ -110,43 +119,47 @@ export class ArbolCorazones {
         ctx.moveTo(x, y);
         
         // Tronco irregular (ondulado)
-        const cp1x = x + Math.cos(angle - 0.3) * (length / 3);
-        const cp1y = y + Math.sin(angle - 0.3) * (length / 3);
-        const cp2x = x + Math.cos(angle + 0.3) * (length * 2 / 3);
-        const cp2y = y + Math.sin(angle + 0.3) * (length * 2 / 3);
+        const cp1x = x + Math.cos(angle - 0.2) * (length / 3);
+        const cp1y = y + Math.sin(angle - 0.2) * (length / 3);
+        const cp2x = x + Math.cos(angle + 0.2) * (length * 2 / 3);
+        const cp2y = y + Math.sin(angle + 0.2) * (length * 2 / 3);
         
         ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
         ctx.stroke();
 
-        // Ramificaciones
+        // Ramificaciones (más esparcidas para evitar amontonamiento)
         const branches = depth === 0 ? (Math.random() > 0.5 ? 3 : 2) : 2;
         
         for (let i = 0; i < branches; i++) {
-            const newAngle = angle + (Math.random() * 1.2 - 0.6);
-            const newLength = length * (0.6 + Math.random() * 0.2);
+            // Ampliar el ángulo para abrir más el árbol
+            const newAngle = angle + (Math.random() * 1.6 - 0.8);
+            const newLength = length * (0.65 + Math.random() * 0.15);
             const newThickness = thickness * 0.6;
 
             // Generar follaje de corazones alrededor de ramas medias y altas
             if (depth > 1) {
-                const cantidadCorazones = Math.floor(Math.random() * 4) + 2;
+                // Menos corazones por rama pero más esparcidos
+                const cantidadCorazones = Math.floor(Math.random() * 3) + 1;
                 for (let j = 0; j < cantidadCorazones; j++) {
-                    // Distribuir a lo largo de la rama
+                    // Distribuir más a lo largo y ancho de la rama
                     const t = Math.random();
-                    const hx = x + (endX - x) * t + (Math.random() - 0.5) * 40;
-                    const hy = y + (endY - y) * t + (Math.random() - 0.5) * 40;
+                    // Mayor offset aleatorio (80 en vez de 40)
+                    const spread = 70 + (depth * 10);
+                    const hx = x + (endX - x) * t + (Math.random() - 0.5) * spread;
+                    const hy = y + (endY - y) * t + (Math.random() - 0.5) * spread;
                     
                     this.corazonesEstaticos.push({
                         x: hx,
                         y: hy,
-                        size: 6 + Math.random() * 12,
+                        size: 7 + Math.random() * 14, // Ligeramente más grandes para llenar mejor
                         color: this.coloresCorazon[Math.floor(Math.random() * this.coloresCorazon.length)],
-                        angle: (Math.random() - 0.5) * 0.5,
-                        opacity: 0.7 + Math.random() * 0.3
+                        angle: (Math.random() - 0.5) * 0.8,
+                        opacity: 0.6 + Math.random() * 0.4
                     });
                 }
             }
 
-            this.dibujarRama(ctx, endX, endY, newLength, newAngle, newThickness, depth + 1);
+            this.dibujarRama(ctx, endX, endY, newLength, newAngle, newThickness, depth + 1, isDark);
         }
     }
 
@@ -203,6 +216,14 @@ export class ArbolCorazones {
     iniciarAnimacion() {
         const loop = () => {
             if (!this.ctx) return;
+
+            // Observar cambios de tema para redibujar el árbol
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            if (this.lastTheme !== currentTheme) {
+                this.lastTheme = currentTheme;
+                this.dibujarArbolAcuarela();
+            }
+
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             
             // Dibujar árbol estático cacheado
