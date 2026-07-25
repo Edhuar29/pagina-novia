@@ -1,4 +1,5 @@
 import { FilesetResolver, HandLandmarker } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm';
+import { ParticleSystem3D } from './ParticleSystem3D.js';
 
 export class EspejoMagico {
     constructor() {
@@ -62,12 +63,26 @@ export class EspejoMagico {
         window.addEventListener('resize', () => this.resize());
 
         try {
-            // Iniciar cámara
-            this.stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "user" },
-                audio: false
-            });
-            this.video.srcObject = this.stream;
+            const isMobile = window.innerWidth < 768;
+            const constraints = {
+                video: {
+                    facingMode: 'user',
+                    width: isMobile ? { ideal: window.innerHeight } : { ideal: 1280 },
+                    height: isMobile ? { ideal: window.innerWidth } : { ideal: 720 }
+                }
+            };
+            
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            this.video.srcObject = stream;
+            
+            // Inicializar sistema de partículas 3D
+            if (!this.particleSystem) {
+                this.particleSystem = new ParticleSystem3D('canvas-3d-container');
+                document.getElementById('espejo-ui').style.display = 'block';
+            }
+
+            const musicPlayer = document.getElementById('music-player');
+            if (musicPlayer) musicPlayer.classList.add('espejo-mode');
             this.video.muted = true; // REQUERIDO para móviles
             
             await new Promise((resolve) => {
@@ -110,7 +125,26 @@ export class EspejoMagico {
         this.running = false;
         if (this.stream) {
             this.stream.getTracks().forEach(track => track.stop());
+            this.stream = null;
         }
+        if (this.video) {
+            this.video.srcObject = null;
+        }
+        
+        if (this.particleSystem) {
+            this.particleSystem.destroy();
+            this.particleSystem = null;
+        }
+        
+        const ui = document.getElementById('espejo-ui');
+        if (ui) ui.style.display = 'none';
+        
+        const musicPlayer = document.getElementById('music-player');
+        if (musicPlayer) musicPlayer.classList.remove('espejo-mode');
+        
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.particles = [];
+        this.resize();
     }
 
     resize() {
@@ -173,6 +207,15 @@ export class EspejoMagico {
         // Distancia pulgar - indice (para otro gesto)
         const thumbTip = landmarks[4];
         const pinchDist = Math.hypot(thumbTip.x - indexFingerTip.x, thumbTip.y - indexFingerTip.y);
+
+        // Actualizar el estado de la mano para Three.js
+        if (this.particleSystem) {
+            let state = 'open';
+            if (pinchDist < 0.05 || distance < 0.2) {
+                state = 'closed';
+            }
+            this.particleSystem.updateHandState(1 - indexFingerTip.x, indexFingerTip.y, state);
+        }
 
         let shape = 'heart';
         let color = '#ff4757';
