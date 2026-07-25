@@ -9,10 +9,11 @@ import { JuegoFlappyCorazon } from './classes/JuegoFlappyCorazon.js';
 import { JuegoAtrapaBesos } from './classes/JuegoAtrapaBesos.js';
 import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js?v=3';
 import { ThemeController } from './classes/ThemeController.js';
+import { SakuraTree } from './classes/SakuraTree.js';
+import { EspejoMagico } from './classes/EspejoMagico.js';
 
 // Cuando la página termine de cargar, inicializamos nuestras clases
 document.addEventListener('DOMContentLoaded', () => {
-    
     console.log("Iniciando aplicación SPA...");
 
     // Inicializar controlador de tema (Modo Noche)
@@ -38,6 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const controlJuegos = new JuegosController();
     const ticTacToe = new JuegoTicTacToe();
     const flappy = new JuegoFlappyCorazon();
+
+    // Iniciar Sakura Tree (Planta del Amor) usando la misma fecha del contador
+    const sakura = new SakuraTree("sakuraCanvas", "2026-07-10T00:00:00");
+
+    // Iniciar Espejo Mágico
+    const espejo = new EspejoMagico();
+
+    console.log("Aplicación iniciada correctamente.");
+
     const besos = new JuegoAtrapaBesos();
     const byd = new JuegoViajeBYD();
 
