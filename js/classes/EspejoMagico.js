@@ -1,3 +1,5 @@
+import { FilesetResolver, HandLandmarker } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm';
+
 export class EspejoMagico {
     constructor() {
         this.video = document.getElementById('video-espejo');
@@ -66,10 +68,10 @@ export class EspejoMagico {
 
             // Cargar modelo de MediaPipe
             if (!this.handLandmarker) {
-                const vision = await window.FilesetResolver.forVisionTasks(
+                const vision = await FilesetResolver.forVisionTasks(
                     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
                 );
-                this.handLandmarker = await window.HandLandmarker.createFromOptions(vision, {
+                this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
                     baseOptions: {
                         modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
                         delegate: "GPU"
