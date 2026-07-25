@@ -178,9 +178,17 @@ export class EspejoMagico {
             const detections = this.handLandmarker.detectForVideo(this.video, performance.now());
             
             if (detections.landmarks) {
+                // Enviar todas las manos detectadas al sistema holográfico 3D
+                if (this.particleSystem) {
+                    this.particleSystem.updateHands(detections.landmarks);
+                }
+
                 for (const landmarks of detections.landmarks) {
                     this.procesarGesto(landmarks);
                 }
+            } else if (this.particleSystem) {
+                // Si no hay manos, avisar al sistema
+                this.particleSystem.updateHands([]);
             }
         }
 
@@ -207,11 +215,6 @@ export class EspejoMagico {
         // Distancia pulgar - indice (para otro gesto)
         const thumbTip = landmarks[4];
         const pinchDist = Math.hypot(thumbTip.x - indexFingerTip.x, thumbTip.y - indexFingerTip.y);
-
-        // Actualizar el estado de la mano para Three.js (Holograma Iron Man)
-        if (this.particleSystem) {
-            this.particleSystem.updateHandState(1 - wrist.x, wrist.y, distance);
-        }
 
         let shape = 'heart';
         let color = '#ff4757';

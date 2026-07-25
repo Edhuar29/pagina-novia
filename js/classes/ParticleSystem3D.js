@@ -7,6 +7,8 @@ export class ParticleSystem3D {
         }
 
         this.isAnimating = true;
+        this.targetPosition = { x: 0, y: 0 };
+        this.currentPosition = { x: 0, y: 0 };
         this.targetRotation = { x: 0, y: 0 };
         this.currentRotation = { x: 0, y: 0 };
         this.targetScale = 1.0;
@@ -97,7 +99,7 @@ export class ParticleSystem3D {
             let x = 0, y = 0, z = 0;
 
             if (patternName === 'sphere') {
-                const radius = 3 * Math.cbrt(Math.random());
+                const radius = 1.5 * Math.cbrt(Math.random());
                 const theta = Math.random() * 2 * Math.PI;
                 const phi = Math.acos(2 * Math.random() - 1);
                 x = radius * Math.sin(phi) * Math.cos(theta);
@@ -105,42 +107,42 @@ export class ParticleSystem3D {
                 z = radius * Math.cos(phi);
             } 
             else if (patternName === 'cube') {
-                x = (Math.random() - 0.5) * 4;
-                y = (Math.random() - 0.5) * 4;
-                z = (Math.random() - 0.5) * 4;
+                x = (Math.random() - 0.5) * 2;
+                y = (Math.random() - 0.5) * 2;
+                z = (Math.random() - 0.5) * 2;
             } 
             else if (patternName === 'heart') {
                 const t = (Math.random() - 0.5) * 2 * Math.PI;
-                const r = 0.15;
+                const r = 0.08;
                 x = r * 16 * Math.pow(Math.sin(t), 3);
                 y = r * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
-                z = (Math.random() - 0.5) * 1.5;
+                z = (Math.random() - 0.5) * 0.8;
             }
             else if (patternName === 'galaxy') {
-                const radius = Math.random() * 4;
+                const radius = Math.random() * 2;
                 const branches = 4;
                 const spinAngle = radius * 1.5;
                 const branchAngle = (i % branches) / branches * Math.PI * 2;
                 
-                const randomSpread = (Math.random() - 0.5) * (Math.random() * 0.8);
+                const randomSpread = (Math.random() - 0.5) * (Math.random() * 0.4);
 
                 x = Math.cos(branchAngle + spinAngle) * radius + randomSpread;
-                y = (Math.random() - 0.5) * 0.5;
+                y = (Math.random() - 0.5) * 0.25;
                 z = Math.sin(branchAngle + spinAngle) * radius + randomSpread;
             }
             else if (patternName === 'tornado') {
-                const height = (Math.random() - 0.5) * 6;
-                const radius = (height + 3) * 0.5 * Math.random();
+                const height = (Math.random() - 0.5) * 3;
+                const radius = (height + 1.5) * 0.5 * Math.random();
                 const angle = height * 4 + Math.random() * Math.PI * 2;
                 x = Math.cos(angle) * radius;
                 y = height;
                 z = Math.sin(angle) * radius;
             }
             else if (patternName === 'dna') {
-                const height = (Math.random() - 0.5) * 6;
+                const height = (Math.random() - 0.5) * 3;
                 const angle = height * 2;
                 const strand = i % 2 === 0 ? 1 : -1;
-                const radius = 1.2;
+                const radius = 0.6;
                 x = Math.cos(angle + (strand === 1 ? 0 : Math.PI)) * radius;
                 y = height;
                 z = Math.sin(angle + (strand === 1 ? 0 : Math.PI)) * radius;
@@ -157,9 +159,9 @@ export class ParticleSystem3D {
                 }
                 
                 // Add noise
-                x += (Math.random() - 0.5) * 0.2;
-                y += (Math.random() - 0.5) * 0.2;
-                z += (Math.random() - 0.5) * 0.2;
+                x += (Math.random() - 0.5) * 0.1;
+                y += (Math.random() - 0.5) * 0.1;
+                z += (Math.random() - 0.5) * 0.1;
             }
 
             this.basePositions[i3] = x;
@@ -168,30 +170,56 @@ export class ParticleSystem3D {
         }
     }
 
-    updateHandState(normalizedX, normalizedY, openness) {
-        // Iron Man Style Interaction
-        
-        // 1. Rotation mapping: Map hand X, Y to rotation angles
-        // normalizedX goes 0 to 1 (left to right) -> map to Y axis rotation (-PI to PI)
-        // normalizedY goes 0 to 1 (top to bottom) -> map to X axis rotation (-PI/2 to PI/2)
-        this.targetRotation.y = (normalizedX - 0.5) * Math.PI * 2;
-        this.targetRotation.x = (normalizedY - 0.5) * Math.PI;
+    updateHands(landmarksArray) {
+        if (!landmarksArray || landmarksArray.length === 0) {
+            // Regresar al tamaño normal si no hay manos, pero mantener la rotación actual
+            this.targetScale = 1.0;
+            return;
+        }
 
-        // 2. Scale mapping: Map hand openness (0 to 1) to scale (0.2 to 2.0)
-        // openness is distance between fingers. High distance = large scale.
-        // We expect openness to roughly be between 0.0 (closed) and 0.5 (wide open)
-        const mappedScale = 0.5 + (openness * 4); // If openness=0 -> 0.5. If 0.5 -> 2.5
-        this.targetScale = Math.max(0.2, Math.min(mappedScale, 3.0));
+        // 1. Mano Principal (Primera mano detectada) -> Controla Movimiento (Traslación X/Y) y Escala
+        const hand1 = landmarksArray[0];
+        const wrist1 = hand1[0];
+        const middle1 = hand1[12];
+        const distance1 = Math.hypot(middle1.x - wrist1.x, middle1.y - wrist1.y);
+
+        // Mapear X e Y de la muñeca a la posición en el espacio 3D (Cámara -4 a 4)
+        this.targetPosition.x = (0.5 - wrist1.x) * 8; // Invertido porque la cámara actúa como espejo
+        this.targetPosition.y = (0.5 - wrist1.y) * 6;
+
+        // Escala controlada por la apertura de la mano
+        const mappedScale = 0.3 + (distance1 * 2); // Si distance=0 -> 0.3. Si 0.4 -> 1.1
+        this.targetScale = Math.max(0.1, Math.min(mappedScale, 1.8));
+
+        // 2. Mano Secundaria (Segunda mano detectada) -> Controla Rotación (Giro X/Y)
+        if (landmarksArray.length > 1) {
+            const hand2 = landmarksArray[1];
+            const wrist2 = hand2[0];
+            
+            // Usar la posición de la mano secundaria como joystick
+            this.targetRotation.y = (0.5 - wrist2.x) * Math.PI * 2;
+            this.targetRotation.x = (wrist2.y - 0.5) * Math.PI;
+        }
     }
 
     animate() {
         requestAnimationFrame(this.animate);
         
-        // Smoothly interpolate rotation and scale (Lerp)
+        // Rotación automática activa si no está pausado
+        if (this.isAnimating) {
+            this.targetRotation.y += 0.005;
+        }
+
+        // Interpolación suave para posiciones, rotaciones y escalas (Lerp)
+        this.currentPosition.x += (this.targetPosition.x - this.currentPosition.x) * 0.1;
+        this.currentPosition.y += (this.targetPosition.y - this.currentPosition.y) * 0.1;
+
         this.currentRotation.x += (this.targetRotation.x - this.currentRotation.x) * 0.1;
         this.currentRotation.y += (this.targetRotation.y - this.currentRotation.y) * 0.1;
         this.currentScale += (this.targetScale - this.currentScale) * 0.1;
 
+        // Aplicar transformaciones al holograma
+        this.hologramGroup.position.set(this.currentPosition.x, this.currentPosition.y, 0);
         this.hologramGroup.rotation.x = this.currentRotation.x;
         this.hologramGroup.rotation.y = this.currentRotation.y;
         this.hologramGroup.scale.set(this.currentScale, this.currentScale, this.currentScale);
