@@ -306,7 +306,7 @@ h1, h2, h3, h4 {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .music-player {
+    .music-player:not(.espejo-mode) {
         width: calc(100% - 20px);
         bottom: 80px;
     }

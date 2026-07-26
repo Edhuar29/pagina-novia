@@ -22,16 +22,17 @@
 }
 
 .music-player.espejo-mode {
-    top: auto;
-    bottom: max(20px, env(safe-area-inset-bottom));
-    left: auto;
-    right: 20px;
-    transform: none;
-    width: 250px;
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    background: rgba(0, 0, 0, 0.7);
-    padding: 8px 12px;
+    top: 20px !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 20px !important;
+    transform: none !important;
+    width: 220px !important;
+    max-width: calc(100vw - 190px) !important;
+    border-radius: 15px !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    background: rgba(0, 0, 0, 0.75) !important;
+    padding: 8px 12px !important;
 }
 
 .player-top-row {

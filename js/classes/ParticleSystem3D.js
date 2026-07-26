@@ -198,21 +198,34 @@ export class ParticleSystem3D {
         }
     }
 
-    updateHands(landmarksArray) {
+    updateHands(landmarksArray, videoWidth = 1280, videoHeight = 720) {
         if (!landmarksArray || landmarksArray.length === 0) {
             // Regresar al tamaño normal si no hay manos, pero mantener la rotación actual
             this.targetScale = 1.0;
             return;
         }
 
-        // 1. Mano Principal (Primera mano detectada) -> Controla Movimiento (Traslación X/Y) y Escala
+        // 1. Mano Principal -> Colocar partículas EXACTAMENTE en la punta del dedo índice
         const hand1 = landmarksArray[0];
         const indexTip = hand1[8];
-        const thumbTip = hand1[4];
+        const wrist1 = hand1[0];
         
-        // Centro entre el índice y el pulgar para "sostener" el objeto
-        const midX = (indexTip.x + thumbTip.x) / 2;
-        const midY = (indexTip.y + thumbTip.y) / 2;
+        // Mapear coordenadas considerando object-fit: cover del video en pantalla
+        const W_w = window.innerWidth;
+        const W_h = window.innerHeight;
+        const scale = Math.max(W_w / videoWidth, W_h / videoHeight);
+        const dispW = videoWidth * scale;
+        const dispH = videoHeight * scale;
+        const offsetX = (dispW - W_w) / 2;
+        const offsetY = (dispH - W_h) / 2;
+        
+        // Posición en pantalla de la punta del dedo índice (dedo apuntador)
+        const screenX = (indexTip.x * dispW) - offsetX;
+        const screenY = (indexTip.y * dispH) - offsetY;
+        const mirroredScreenX = W_w - screenX;
+        
+        const normX = mirroredScreenX / W_w;
+        const normY = screenY / W_h;
 
         // Calcular las dimensiones exactas del plano visible en z=0
         const distance = this.camera.position.z;
@@ -220,17 +233,15 @@ export class ParticleSystem3D {
         const planeHeight = 2 * Math.tan(vFov / 2) * distance;
         const planeWidth = planeHeight * this.camera.aspect;
         
-        // Mapear coordenadas (de 0-1 a sistema Three.js)
-        // NOTA: midX se invierte porque el espejo (video) está volteado horizontalmente.
-        this.targetPosition.x = -(midX - 0.5) * planeWidth;
-        this.targetPosition.y = -(midY - 0.5) * planeHeight;
+        // Mapeo 3D para que el centro de la figura esté en la yema del dedo
+        this.targetPosition.x = (normX - 0.5) * planeWidth;
+        this.targetPosition.y = -(normY - 0.5) * planeHeight;
 
-        // Rotación manipulable: El objeto gira según la posición de la mano y su inclinación
-        const wrist1 = hand1[0];
+        // Rotación manipulable: El objeto gira según la inclinación de la mano
         const handAngle = Math.atan2(indexTip.y - wrist1.y, indexTip.x - wrist1.x);
-        this.targetRotation.z = -handAngle - Math.PI / 2; // Compensar para que apunte hacia arriba
-        this.targetRotation.y = -(midX - 0.5) * Math.PI * 2; // Girar de lado a lado
-        this.targetRotation.x = (midY - 0.5) * Math.PI; // Girar arriba/abajo
+        this.targetRotation.z = -handAngle - Math.PI / 2;
+        this.targetRotation.y = -(normX - 0.5) * Math.PI * 2;
+        this.targetRotation.x = (normY - 0.5) * Math.PI;
 
         const middle1 = hand1[12];
         const distance1 = Math.hypot(middle1.x - wrist1.x, middle1.y - wrist1.y);
@@ -239,12 +250,10 @@ export class ParticleSystem3D {
         const mappedScale = 0.2 + (distance1 * 1.2); 
         this.targetScale = Math.max(0.1, Math.min(mappedScale, 1.2));
 
-        // 2. Mano Secundaria (Segunda mano detectada) -> Controla Rotación (Giro X/Y)
+        // 2. Mano Secundaria -> Joystick para girar la figura libremente
         if (landmarksArray.length > 1) {
             const hand2 = landmarksArray[1];
             const wrist2 = hand2[0];
-            
-            // Usar la posición de la mano secundaria como joystick
             this.targetRotation.y = (0.5 - wrist2.x) * Math.PI * 2;
             this.targetRotation.x = (wrist2.y - 0.5) * Math.PI;
         }

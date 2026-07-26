@@ -1,3 +1,5 @@
+import cancionUrl from '../../assets/Ojitos Lindos.mp3';
+
 export class ReproductorMusical {
     constructor() {
         // Encontrar los elementos en el HTML
@@ -17,7 +19,7 @@ export class ReproductorMusical {
 
         // Lista de canciones
         this.listaDeCanciones = [
-            { titulo: "Ojitos Lindos", url: "assets/Ojitos Lindos.mp3" }
+            { titulo: "Ojitos Lindos", url: cancionUrl }
         ];
 
         this.configurarReproductor();

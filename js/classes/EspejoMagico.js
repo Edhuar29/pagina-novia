@@ -1,4 +1,3 @@
-import { FilesetResolver, HandLandmarker } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm';
 import { ParticleSystem3D } from './ParticleSystem3D.js';
 
 export class EspejoMagico {
@@ -93,22 +92,40 @@ export class EspejoMagico {
             this.resize();
             await this.video.play();
 
-            // Cargar modelo de MediaPipe
+            // Cargar modelo de MediaPipe dinámicamente para no bloquear carga inicial en móviles
             if (!this.handLandmarker) {
+                const mediapipe = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm');
+                const { FilesetResolver, HandLandmarker } = mediapipe;
+                
                 const vision = await FilesetResolver.forVisionTasks(
                     "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
                 );
-                this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
-                    baseOptions: {
-                        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
-                        delegate: "GPU"
-                    },
-                    runningMode: "VIDEO",
-                    numHands: 2,
-                    minHandDetectionConfidence: 0.5,
-                    minHandPresenceConfidence: 0.5,
-                    minTrackingConfidence: 0.5
-                });
+                
+                try {
+                    this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                        baseOptions: {
+                            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+                            delegate: "GPU"
+                        },
+                        runningMode: "VIDEO",
+                        numHands: 2,
+                        minHandDetectionConfidence: 0.5,
+                        minHandPresenceConfidence: 0.5,
+                        minTrackingConfidence: 0.5
+                    });
+                } catch (gpuError) {
+                    console.warn("GPU delegate falló en móvil/navegador, cayendo a CPU:", gpuError);
+                    this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                        baseOptions: {
+                            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`
+                        },
+                        runningMode: "VIDEO",
+                        numHands: 2,
+                        minHandDetectionConfidence: 0.5,
+                        minHandPresenceConfidence: 0.5,
+                        minTrackingConfidence: 0.5
+                    });
+                }
             }
 
             this.loading.style.display = 'none';
@@ -180,7 +197,7 @@ export class EspejoMagico {
             if (detections.landmarks) {
                 // Enviar todas las manos detectadas al sistema holográfico 3D
                 if (this.particleSystem) {
-                    this.particleSystem.updateHands(detections.landmarks);
+                    this.particleSystem.updateHands(detections.landmarks, this.video.videoWidth || 1280, this.video.videoHeight || 720);
                 }
 
                 for (const landmarks of detections.landmarks) {
@@ -188,7 +205,7 @@ export class EspejoMagico {
                 }
             } else if (this.particleSystem) {
                 // Si no hay manos, avisar al sistema
-                this.particleSystem.updateHands([]);
+                this.particleSystem.updateHands([], this.video.videoWidth || 1280, this.video.videoHeight || 720);
             }
         }
 
