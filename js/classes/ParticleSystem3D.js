@@ -45,7 +45,8 @@ export class ParticleSystem3D {
     }
 
     createParticles() {
-        this.particleCount = 6000;
+        const isMobile = window.innerWidth < 768;
+        this.particleCount = isMobile ? 2500 : 6000;
         this.geometry = new THREE.BufferGeometry();
         
         this.positions = new Float32Array(this.particleCount * 3);
@@ -56,7 +57,7 @@ export class ParticleSystem3D {
         
         this.material = new THREE.PointsMaterial({
             color: new THREE.Color(document.getElementById('espejo-color')?.value || 0xff4757),
-            size: 0.06,
+            size: isMobile ? 0.08 : 0.06,
             transparent: true,
             opacity: 0.9,
             blending: THREE.AdditiveBlending,
@@ -267,9 +268,9 @@ export class ParticleSystem3D {
             this.targetRotation.y += 0.005;
         }
 
-            // Interpolación suave para posiciones, rotaciones y escalas (Lerp)
-        this.currentPosition.x += (this.targetPosition.x - this.currentPosition.x) * 0.1;
-        this.currentPosition.y += (this.targetPosition.y - this.currentPosition.y) * 0.1;
+        // Interpolación súper suave y ágil para que la figura siga la mano sin lag en celular (Lerp)
+        this.currentPosition.x += (this.targetPosition.x - this.currentPosition.x) * 0.22;
+        this.currentPosition.y += (this.targetPosition.y - this.currentPosition.y) * 0.22;
 
         // Calcular Inercia (Trails) de los movimientos bruscos
         const velX = this.currentPosition.x - this.lastPosition.x;
@@ -277,9 +278,9 @@ export class ParticleSystem3D {
         this.lastPosition.x = this.currentPosition.x;
         this.lastPosition.y = this.currentPosition.y;
 
-        this.currentRotation.x += (this.targetRotation.x - this.currentRotation.x) * 0.1;
-        this.currentRotation.y += (this.targetRotation.y - this.currentRotation.y) * 0.1;
-        this.currentScale += (this.targetScale - this.currentScale) * 0.1;
+        this.currentRotation.x += (this.targetRotation.x - this.currentRotation.x) * 0.22;
+        this.currentRotation.y += (this.targetRotation.y - this.currentRotation.y) * 0.22;
+        this.currentScale += (this.targetScale - this.currentScale) * 0.22;
 
         // Aplicar transformaciones al holograma
         this.hologramGroup.position.set(this.currentPosition.x, this.currentPosition.y, 0);
@@ -354,14 +355,14 @@ export class ParticleSystem3D {
                 this.velocities[i3 + 2] += (pz / distToCenter) * force;
             }
 
-            this.velocities[i3] += dx * 0.05;
-            this.velocities[i3 + 1] += dy * 0.05;
-            this.velocities[i3 + 2] += dz * 0.05;
+            this.velocities[i3] += dx * 0.08;
+            this.velocities[i3 + 1] += dy * 0.08;
+            this.velocities[i3 + 2] += dz * 0.08;
 
-            // Damping (fricción)
-            this.velocities[i3] *= 0.8;
-            this.velocities[i3 + 1] *= 0.8;
-            this.velocities[i3 + 2] *= 0.8;
+            // Damping (fricción suave para máxima fluidez)
+            this.velocities[i3] *= 0.82;
+            this.velocities[i3 + 1] *= 0.82;
+            this.velocities[i3 + 2] *= 0.82;
 
             pos[i3] += this.velocities[i3];
             pos[i3 + 1] += this.velocities[i3 + 1];

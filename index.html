@@ -272,13 +272,13 @@
                 </div>
             </div>
 
-            <div style="position: relative; width: 100%; height: 100%; overflow: hidden;">
-                <!-- Video invisible pero usado para MediaPipe -->
-                <video id="video-espejo" autoplay playsinline muted style="display: none;"></video>
-                <!-- Canvas donde se dibuja el video en espejo -->
-                <canvas id="canvas-espejo" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;"></canvas>
+            <div style="position: relative; width: 100%; height: 100%; overflow: hidden; background: #000;">
+                <!-- Video en espejo renderizado directamente por hardware GPU (cero lag y sin pantalla negra) -->
+                <video id="video-espejo" autoplay playsinline webkit-playsinline muted style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; transform: scaleX(-1); display: block;"></video>
+                <!-- Canvas donde se dibujan las partículas 2D de gestos -->
+                <canvas id="canvas-espejo" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; pointer-events: none; background: transparent;"></canvas>
                 <!-- Contenedor WebGL para Three.js -->
-                <div id="canvas-3d-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none;"></div>
+                <div id="canvas-3d-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none;"></div>
             </div>
             
             <div id="espejo-loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center;">

@@ -92,44 +92,49 @@ export class EspejoMagico {
             this.resize();
             await this.video.play();
 
-            // Cargar modelo de MediaPipe dinámicamente para no bloquear carga inicial en móviles
-            if (!this.handLandmarker) {
-                const mediapipe = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm');
-                const { FilesetResolver, HandLandmarker } = mediapipe;
-                
-                const vision = await FilesetResolver.forVisionTasks(
-                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
-                );
-                
-                try {
-                    this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
-                        baseOptions: {
-                            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
-                            delegate: "GPU"
-                        },
-                        runningMode: "VIDEO",
-                        numHands: 2,
-                        minHandDetectionConfidence: 0.5,
-                        minHandPresenceConfidence: 0.5,
-                        minTrackingConfidence: 0.5
-                    });
-                } catch (gpuError) {
-                    console.warn("GPU delegate falló en móvil/navegador, cayendo a CPU:", gpuError);
-                    this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
-                        baseOptions: {
-                            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`
-                        },
-                        runningMode: "VIDEO",
-                        numHands: 2,
-                        minHandDetectionConfidence: 0.5,
-                        minHandPresenceConfidence: 0.5,
-                        minTrackingConfidence: 0.5
-                    });
-                }
-            }
-
+            // Mostrar video al instante sin esperar la descarga de MediaPipe en móviles
             this.loading.style.display = 'none';
             this.renderLoop();
+
+            // Cargar modelo de MediaPipe dinámicamente en segundo plano
+            if (!this.handLandmarker) {
+                try {
+                    const mediapipe = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm');
+                    const { FilesetResolver, HandLandmarker } = mediapipe;
+                    
+                    const vision = await FilesetResolver.forVisionTasks(
+                        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+                    );
+                    
+                    try {
+                        this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                            baseOptions: {
+                                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+                                delegate: "GPU"
+                            },
+                            runningMode: "VIDEO",
+                            numHands: 2,
+                            minHandDetectionConfidence: 0.5,
+                            minHandPresenceConfidence: 0.5,
+                            minTrackingConfidence: 0.5
+                        });
+                    } catch (gpuError) {
+                        console.warn("GPU delegate falló en móvil/navegador, cayendo a CPU:", gpuError);
+                        this.handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                            baseOptions: {
+                                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`
+                            },
+                            runningMode: "VIDEO",
+                            numHands: 2,
+                            minHandDetectionConfidence: 0.5,
+                            minHandPresenceConfidence: 0.5,
+                            minTrackingConfidence: 0.5
+                        });
+                    }
+                } catch (mpErr) {
+                    console.error("Error al cargar MediaPipe:", mpErr);
+                }
+            }
 
         } catch (error) {
             console.error("Error al iniciar cámara o IA: ", error);
@@ -165,29 +170,15 @@ export class EspejoMagico {
     }
 
     resize() {
-        if (this.video && this.video.videoWidth > 0) {
-            this.canvas.width = this.video.videoWidth;
-            this.canvas.height = this.video.videoHeight;
-        } else {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
-        }
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
     }
 
     async renderLoop() {
         if (!this.running) return;
 
-        // Limpiar canvas y dibujar video (Espejado)
-        this.ctx.save();
+        // Limpiar canvas de partículas 2D (el video se renderiza por CSS/hardware GPU)
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Reflejar horizontalmente
-        this.ctx.translate(this.canvas.width, 0);
-        this.ctx.scale(-1, 1);
-        
-        // Dibujar el video cubriendo todo
-        this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.restore();
 
         // Procesar IA
         if (this.handLandmarker && this.video.currentTime !== this.lastVideoTime) {
@@ -219,10 +210,21 @@ export class EspejoMagico {
         // Dedo índice
         const indexFingerTip = landmarks[8];
         
-        // MediaPipe da coordenadas normalizadas [0, 1]
-        // OJO: Como espejamos el video en el canvas, debemos invertir X aquí también
-        const x = (1 - indexFingerTip.x) * this.canvas.width;
-        const y = indexFingerTip.y * this.canvas.height;
+        // Mapeo preciso compensando object-fit: cover en móviles
+        const W_w = this.canvas.width;
+        const W_h = this.canvas.height;
+        const vidW = this.video.videoWidth || 1280;
+        const vidH = this.video.videoHeight || 720;
+        const scale = Math.max(W_w / vidW, W_h / vidH);
+        const dispW = vidW * scale;
+        const dispH = vidH * scale;
+        const offsetX = (dispW - W_w) / 2;
+        const offsetY = (dispH - W_h) / 2;
+        
+        const screenX = (indexFingerTip.x * dispW) - offsetX;
+        const screenY = (indexFingerTip.y * dispH) - offsetY;
+        const x = W_w - screenX;
+        const y = screenY;
 
         // Detectar si la mano está abierta o cerrada
         const middleFingerTip = landmarks[12];
