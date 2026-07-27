@@ -170,3 +170,14 @@ input[type=range]::-moz-range-thumb {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     border: none;
 }
+
+@media (max-width: 768px) {
+    .music-player.espejo-mode {
+        top: auto !important;
+        bottom: 20px !important;
+        left: 15px !important;
+        right: 15px !important;
+        width: calc(100% - 30px) !important;
+        max-width: none !important;
+    }
+}
