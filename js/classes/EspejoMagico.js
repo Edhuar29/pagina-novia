@@ -6,7 +6,9 @@ export class EspejoMagico {
         this.canvas = document.getElementById('canvas-espejo');
         this.btnCerrar = document.getElementById('btn-cerrar-espejo');
         this.loading = document.getElementById('espejo-loading');
-        this.btnToggleEfectos = document.getElementById('btn-toggle-efectos');
+        this.btnLimpiarUI = document.getElementById('btn-limpiar-ui');
+        this.btnSwitchCamera = document.getElementById('btn-switch-camera');
+        this.btnTakePhoto = document.getElementById('btn-take-photo');
         this.canvas3D = document.getElementById('canvas-3d-container');
         
         if (!this.video || !this.canvas) return;
@@ -18,6 +20,7 @@ export class EspejoMagico {
         this.lastVideoTime = -1;
         this.running = false;
         this.efectosOcultos = false;
+        this.facingMode = 'user'; // Por defecto, cámara frontal
         
         // Formas disponibles (corazones, estrellas, flores)
         this.shapes = ['heart', 'star', 'flower'];
@@ -26,20 +29,53 @@ export class EspejoMagico {
     }
 
     initBtnEvent() {
-        if (this.btnToggleEfectos) {
-            this.btnToggleEfectos.addEventListener('click', () => {
-                this.efectosOcultos = !this.efectosOcultos;
-                if (this.efectosOcultos) {
-                    this.canvas.style.display = 'none';
-                    if (this.canvas3D) this.canvas3D.style.display = 'none';
-                    this.btnToggleEfectos.innerHTML = '<i class="fas fa-eye"></i> <span>Efectos</span>';
-                    this.btnToggleEfectos.classList.add('active');
+        if (this.btnLimpiarUI) {
+            this.btnLimpiarUI.addEventListener('click', () => {
+                document.getElementById('vista-espejo').classList.add('ui-hidden');
+            });
+        }
+        
+        // Restaurar UI al tocar la pantalla limpia
+        document.getElementById('vista-espejo').addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I' && !e.target.closest('.espejo-panel') && !e.target.closest('.camera-controls')) {
+                document.getElementById('vista-espejo').classList.remove('ui-hidden');
+            }
+        });
+
+        if (this.btnSwitchCamera) {
+            this.btnSwitchCamera.addEventListener('click', async () => {
+                this.facingMode = this.facingMode === 'user' ? 'environment' : 'user';
+                if (this.facingMode === 'environment') {
+                    this.video.style.transform = 'scaleX(1)';
                 } else {
-                    this.canvas.style.display = 'block';
-                    if (this.canvas3D) this.canvas3D.style.display = 'block';
-                    this.btnToggleEfectos.innerHTML = '<i class="fas fa-eye-slash"></i> <span>Limpiar</span>';
-                    this.btnToggleEfectos.classList.remove('active');
+                    this.video.style.transform = 'scaleX(-1)';
                 }
+                
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                }
+                
+                try {
+                    const isMobile = window.innerWidth < 768;
+                    const constraints = {
+                        video: {
+                            facingMode: this.facingMode,
+                            width: isMobile ? { ideal: window.innerHeight } : { ideal: 1280 },
+                            height: isMobile ? { ideal: window.innerWidth } : { ideal: 720 }
+                        }
+                    };
+                    this.stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    this.video.srcObject = this.stream;
+                    await this.video.play();
+                } catch (error) {
+                    console.error("Error al girar cámara", error);
+                }
+            });
+        }
+
+        if (this.btnTakePhoto) {
+            this.btnTakePhoto.addEventListener('click', () => {
+                this.tomarFoto();
             });
         }
 
@@ -85,7 +121,7 @@ export class EspejoMagico {
             const isMobile = window.innerWidth < 768;
             const constraints = {
                 video: {
-                    facingMode: 'user',
+                    facingMode: this.facingMode,
                     width: isMobile ? { ideal: window.innerHeight } : { ideal: 1280 },
                     height: isMobile ? { ideal: window.innerWidth } : { ideal: 720 }
                 }
@@ -373,5 +409,63 @@ export class EspejoMagico {
         ctx.beginPath();
         ctx.arc(x, y, size / 4, 0, Math.PI * 2);
         ctx.fill();
+    }
+
+    tomarFoto() {
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = w;
+        tempCanvas.height = h;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        // Flash blanco
+        const flash = document.createElement('div');
+        flash.style.position = 'absolute';
+        flash.style.top = '0'; flash.style.left = '0';
+        flash.style.width = '100%'; flash.style.height = '100%';
+        flash.style.backgroundColor = 'white';
+        flash.style.zIndex = '9999';
+        flash.style.transition = 'opacity 0.4s';
+        document.getElementById('vista-espejo').appendChild(flash);
+        setTimeout(() => { flash.style.opacity = '0'; setTimeout(() => flash.remove(), 400); }, 50);
+
+        // 1. Dibujar el video
+        const vidW = this.video.videoWidth;
+        const vidH = this.video.videoHeight;
+        const scale = Math.max(w / vidW, h / vidH);
+        const dispW = vidW * scale;
+        const dispH = vidH * scale;
+        const offsetX = (w - dispW) / 2;
+        const offsetY = (h - dispH) / 2;
+
+        if (this.facingMode === 'user') {
+            tempCtx.translate(w, 0);
+            tempCtx.scale(-1, 1);
+        }
+        
+        tempCtx.drawImage(this.video, offsetX, offsetY, dispW, dispH);
+        
+        if (this.facingMode === 'user') {
+            tempCtx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+
+        // 2. Dibujar el canvas 3D si hay efectos
+        const webglCanvas = this.canvas3D.querySelector('canvas');
+        if (webglCanvas) {
+            tempCtx.drawImage(webglCanvas, 0, 0, w, h);
+        }
+
+        // 3. Dibujar las partículas 2D (manos)
+        tempCtx.drawImage(this.canvas, 0, 0, w, h);
+
+        // Forzar la descarga
+        const dataUrl = tempCanvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `recuerdo_${Date.now()}.png`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 }
