@@ -151,7 +151,7 @@ export class MuseoRecuerdos {
             
             painting.innerHTML = `
                 <div class="painting-light"></div>
-                <img data-src="${foto.src}" alt="${foto.titulo}">
+                <div class="painting-img" data-src="${foto.src}"></div>
                 <div class="painting-plaque">${foto.titulo}</div>
             `;
             
@@ -241,20 +241,20 @@ export class MuseoRecuerdos {
                 // p.z es 0, 400, 800... El usuario llega a p.z cuando currentZ = p.z + 800
                 const distance = Math.abs(this.currentZ - (p.z + 800));
                 
-                const img = p.el.querySelector('img');
+                const img = p.el.querySelector('.painting-img');
                 // Cargar imagen si está a menos de 1800px de distancia
                 if (distance < 1800) {
                     const dataSrc = img.getAttribute('data-src');
-                    if (img.getAttribute('src') !== dataSrc) {
-                        img.setAttribute('src', dataSrc);
+                    if (img.style.backgroundImage !== `url("${dataSrc}")`) {
+                        img.style.backgroundImage = `url("${dataSrc}")`;
                     }
                 } else if (distance > 2500) {
                     // Descargarla de la RAM si está muy lejos
-                    img.removeAttribute('src');
+                    img.style.backgroundImage = 'none';
                 }
 
-                // Ocultar del DOM (display: none) si ya pasamos el cuadro para evitar el glitch de CSS 3D
-                if (this.currentZ > p.z + 900) {
+                // Ocultar del DOM (display: none) si ya pasamos el cuadro O si está muy lejos, para evitar crash de RAM
+                if (this.currentZ > p.z + 900 || distance > 2800) {
                     p.el.style.display = 'none';
                 } else {
                     p.el.style.display = 'flex'; // Usaba flexbox
