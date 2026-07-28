@@ -133,13 +133,13 @@
 /* UI Cámara */
 .camera-controls {
     position: absolute;
-    bottom: 30px;
+    bottom: calc(50px + env(safe-area-inset-bottom));
     left: 0;
     width: 100%;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    z-index: 200;
+    z-index: 9999;
     padding: 0 20px;
 }
 
