@@ -232,6 +232,8 @@
     background: #fdfaf6; /* Fondo claro crema original */
     display: none;
     overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
 }
 
 .museum-3d-overlay.active {
@@ -390,7 +392,9 @@
     transition: background 0.3s, transform 0.2s;
     /* Evitar que el texto se seleccione al dar taps rápidos */
     user-select: none;
+    -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 .btn-museum-nav:hover:not(:disabled) {
     background: rgba(212,175,55,0.2);
@@ -416,6 +420,10 @@
     z-index: 3100;
     backdrop-filter: blur(5px);
     transition: background 0.3s;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 .btn-museum-exit:hover {
     background: #ff4757;
