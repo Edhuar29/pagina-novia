@@ -308,6 +308,7 @@
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
     transform-style: preserve-3d;
+    content-visibility: auto;
 }
 .museum-painting:hover {
     transform: scale(1.05) translateZ(10px);

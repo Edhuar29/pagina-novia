@@ -151,7 +151,7 @@ export class MuseoRecuerdos {
             
             painting.innerHTML = `
                 <div class="painting-light"></div>
-                <img src="${foto.src}" alt="${foto.titulo}">
+                <img src="${foto.src}" alt="${foto.titulo}" loading="lazy" decoding="async">
                 <div class="painting-plaque">${foto.titulo}</div>
             `;
             
