@@ -278,7 +278,7 @@
 }
 
 .wall-left, .wall-right {
-    height: 600px;
+    height: 1000px;
 }
 
 .wall-floor {
@@ -325,10 +325,12 @@
 
 .painting-light {
     position: absolute;
-    top: -80px; left: 50%;
+    top: -20px; left: 50%;
     transform: translateX(-50%);
-    width: 250px; height: 250px;
-    background: radial-gradient(ellipse at top, rgba(255,182,193,0.3) 0%, transparent 60%);
+    width: 60px; height: 10px;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 15px #fff, 0 20px 40px rgba(255,255,255,0.6);
     pointer-events: none;
     z-index: 2;
 }
