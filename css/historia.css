@@ -240,12 +240,12 @@
     display: block;
 }
 
-/* Nuevo contenedor para aislar la perspectiva del UI */
 .museum-viewport {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
     perspective: 800px;
     overflow: hidden;
+    z-index: 1;
 }
 
 
@@ -276,7 +276,6 @@
     background-image: 
         linear-gradient(to top, #dcb8c0 0%, #dcb8c0 100px, #ffffff 100px, #ffffff 115px, transparent 115px),
         repeating-linear-gradient(to right, rgba(0,0,0,0.02) 0, rgba(0,0,0,0.02) 60px, transparent 60px, transparent 120px);
-    box-shadow: inset 0 0 200px rgba(0,0,0,0.12); /* Sombra para profundidad en las esquinas */
 }
 
 .wall-left, .wall-right {
@@ -290,13 +289,11 @@
     background-image: 
         repeating-linear-gradient(to bottom, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 3px, transparent 3px, transparent 800px),
         repeating-linear-gradient(to right, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 3px, transparent 3px, transparent 150px);
-    box-shadow: inset 0 0 300px rgba(0,0,0,0.6); /* Sombras fuertes en las esquinas del suelo */
 }
 
 .wall-ceiling {
     position: absolute;
     background: #e8dadd;
-    box-shadow: inset 0 0 300px rgba(0,0,0,0.5); /* Sombra en el techo */
 }
 
 /* Cuadros en la pared */
