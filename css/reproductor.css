@@ -174,7 +174,7 @@ input[type=range]::-moz-range-thumb {
 @media (max-width: 768px) {
     .music-player.espejo-mode {
         top: auto !important;
-        bottom: 20px !important;
+        bottom: 140px !important;
         left: 15px !important;
         right: 15px !important;
         width: calc(100% - 30px) !important;
