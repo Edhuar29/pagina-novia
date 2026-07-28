@@ -69,27 +69,27 @@ export class MuseoRecuerdos {
             const wallLeft = document.createElement('div');
             wallLeft.className = 'museum-wall wall-left';
             wallLeft.style.width = '2000px';
-            wallLeft.style.transform = `translate3d(-1700px, -500px, ${chunkZ}px) rotateY(90deg)`;
+            wallLeft.style.transform = `translate3d(-1700px, -300px, ${chunkZ}px) rotateY(90deg)`;
             this.world.appendChild(wallLeft);
             
             const wallRight = document.createElement('div');
             wallRight.className = 'museum-wall wall-right';
             wallRight.style.width = '2000px';
-            wallRight.style.transform = `translate3d(-300px, -500px, ${chunkZ}px) rotateY(-90deg)`;
+            wallRight.style.transform = `translate3d(-300px, -300px, ${chunkZ}px) rotateY(-90deg)`;
             this.world.appendChild(wallRight);
             
             const floor = document.createElement('div');
             floor.className = 'wall-floor';
             floor.style.width = '1400px';
             floor.style.height = '2000px';
-            floor.style.transform = `translate3d(-700px, -500px, ${chunkZ}px) rotateX(90deg)`;
+            floor.style.transform = `translate3d(-700px, -300px, ${chunkZ}px) rotateX(90deg)`;
             this.world.appendChild(floor);
             
             const ceiling = document.createElement('div');
             ceiling.className = 'wall-ceiling';
             ceiling.style.width = '1400px';
             ceiling.style.height = '2000px';
-            ceiling.style.transform = `translate3d(-700px, -1500px, ${chunkZ}px) rotateX(-90deg)`;
+            ceiling.style.transform = `translate3d(-700px, -900px, ${chunkZ}px) rotateX(-90deg)`;
             this.world.appendChild(ceiling);
         }
 
@@ -98,16 +98,16 @@ export class MuseoRecuerdos {
         const wallBack = document.createElement('div');
         wallBack.className = 'museum-wall wall-back';
         wallBack.style.width = '1400px';
-        wallBack.style.height = '1000px';
-        wallBack.style.transform = `translate3d(-700px, -500px, ${farthestZ}px)`;
+        wallBack.style.height = '600px';
+        wallBack.style.transform = `translate3d(-700px, -300px, ${farthestZ}px)`;
         this.world.appendChild(wallBack);
 
         // Crear pared frontal (detrás del usuario al iniciar)
         const wallFront = document.createElement('div');
         wallFront.className = 'museum-wall wall-front';
         wallFront.style.width = '1400px';
-        wallFront.style.height = '1000px';
-        wallFront.style.transform = `translate3d(-700px, -500px, 1000px) rotateY(180deg)`;
+        wallFront.style.height = '600px';
+        wallFront.style.transform = `translate3d(-700px, -300px, 1000px) rotateY(180deg)`;
         this.world.appendChild(wallFront);
 
         // UI Controles
@@ -242,13 +242,13 @@ export class MuseoRecuerdos {
                 const distance = Math.abs(this.currentZ - (p.z + 800));
                 
                 const img = p.el.querySelector('img');
-                // Cargar imagen si está a menos de 2400px de distancia
-                if (distance < 2400) {
+                // Cargar imagen si está a menos de 1800px de distancia
+                if (distance < 1800) {
                     const dataSrc = img.getAttribute('data-src');
                     if (img.getAttribute('src') !== dataSrc) {
                         img.setAttribute('src', dataSrc);
                     }
-                } else if (distance > 3600) {
+                } else if (distance > 2500) {
                     // Descargarla de la RAM si está muy lejos
                     img.removeAttribute('src');
                 }
