@@ -86,14 +86,6 @@ export class ParticleSystem3D {
                 this.changePattern(e.target.value);
             });
         }
-
-        const btnAnim = document.getElementById('btn-anim-espejo');
-        if (btnAnim) {
-            btnAnim.addEventListener('click', () => {
-                this.isAnimating = !this.isAnimating;
-                btnAnim.innerHTML = this.isAnimating ? '<i class="fas fa-pause"></i> Pausar Animación' : '<i class="fas fa-play"></i> Reanudar Animación';
-            });
-        }
     }
 
     changePattern(patternName) {
