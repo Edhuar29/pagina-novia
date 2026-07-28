@@ -44,6 +44,10 @@ export class EspejoMagico {
 
         if (this.btnSwitchCamera) {
             this.btnSwitchCamera.addEventListener('click', async () => {
+                this.btnSwitchCamera.disabled = true;
+                this.video.style.transition = 'opacity 0.2s';
+                this.video.style.opacity = '0';
+                
                 this.facingMode = this.facingMode === 'user' ? 'environment' : 'user';
                 if (this.facingMode === 'environment') {
                     this.video.style.transform = 'scaleX(1)';
@@ -69,6 +73,9 @@ export class EspejoMagico {
                     await this.video.play();
                 } catch (error) {
                     console.error("Error al girar cámara", error);
+                } finally {
+                    this.video.style.opacity = '1';
+                    setTimeout(() => { this.btnSwitchCamera.disabled = false; }, 300);
                 }
             });
         }
@@ -460,13 +467,35 @@ export class EspejoMagico {
         // 3. Dibujar las partículas 2D (manos)
         tempCtx.drawImage(this.canvas, 0, 0, w, h);
 
-        // Forzar la descarga
         const dataUrl = tempCanvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = `recuerdo_${Date.now()}.png`;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        
+        // Intentar usar la API nativa de compartir para guardar directo en la galería
+        const guardarEnGaleria = async () => {
+            try {
+                const res = await fetch(dataUrl);
+                const blob = await res.blob();
+                const file = new File([blob], `recuerdo_${Date.now()}.png`, { type: 'image/png' });
+                
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Recuerdo',
+                        text: '¡Mira nuestra foto!'
+                    });
+                } else {
+                    throw new Error("Share API no soportada");
+                }
+            } catch (err) {
+                // Fallback tradicional si falla (ej. PC)
+                const link = document.createElement('a');
+                link.download = `recuerdo_${Date.now()}.png`;
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        };
+        
+        guardarEnGaleria();
     }
 }
