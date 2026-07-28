@@ -112,13 +112,13 @@ export class JuegoViajeBYD {
 
         let terrenoScaleY = 50;
         if(nivel === 'facil') {
-            this.distanciaTotal = 4000;
+            this.distanciaTotal = 8000;
             terrenoScaleY = 40;
         } else if (nivel === 'medio') {
-            this.distanciaTotal = 6000;
+            this.distanciaTotal = 12000;
             terrenoScaleY = 75;
         } else {
-            this.distanciaTotal = 8000;
+            this.distanciaTotal = 16000;
             terrenoScaleY = 120;
         }
 
@@ -169,8 +169,8 @@ export class JuegoViajeBYD {
                     if (angulo < -Math.PI) angulo += 2 * Math.PI;
                     if (angulo > Math.PI) angulo -= 2 * Math.PI;
                     
-                    // Si choca con el piso y está de cabeza (más de 100 grados), se volcó.
-                    if (Math.abs(angulo) > Math.PI * 0.55) {
+                    // Si choca con el piso y está muy de cabeza (más de 135 grados), se volcó.
+                    if (Math.abs(angulo) > Math.PI * 0.75) {
                         this.finJuego('vuelco');
                     }
                 }
