@@ -151,7 +151,7 @@ export class MuseoRecuerdos {
             
             painting.innerHTML = `
                 <div class="painting-light"></div>
-                <img src="${foto.src}" alt="${foto.titulo}" loading="lazy" decoding="async">
+                <img data-src="${foto.src}" alt="${foto.titulo}">
                 <div class="painting-plaque">${foto.titulo}</div>
             `;
             
@@ -235,15 +235,29 @@ export class MuseoRecuerdos {
         this.btnRetroceder.disabled = this.currentZ <= 400;
         this.btnAvanzar.disabled = this.currentZ >= this.maxZ;
 
-        // Ocultar cuadros que ya pasaron detrás de la cámara para evitar el glitch de CSS 3D
+        // Ocultar cuadros lejanos y hacer lazy-loading manual para ahorrar RAM sin bugs de Safari
         if (this.paintings) {
             this.paintings.forEach(p => {
                 // p.z es 0, 400, 800... El usuario llega a p.z cuando currentZ = p.z + 800
-                // Lo ocultamos si currentZ es mayor a p.z + 900 (es decir, ya lo pasamos por 100px)
+                const distance = Math.abs(this.currentZ - (p.z + 800));
+                
+                const img = p.el.querySelector('img');
+                // Cargar imagen si está a menos de 2400px de distancia
+                if (distance < 2400) {
+                    const dataSrc = img.getAttribute('data-src');
+                    if (img.getAttribute('src') !== dataSrc) {
+                        img.setAttribute('src', dataSrc);
+                    }
+                } else if (distance > 3600) {
+                    // Descargarla de la RAM si está muy lejos
+                    img.removeAttribute('src');
+                }
+
+                // Ocultar del DOM (display: none) si ya pasamos el cuadro para evitar el glitch de CSS 3D
                 if (this.currentZ > p.z + 900) {
                     p.el.style.display = 'none';
                 } else {
-                    p.el.style.display = 'block';
+                    p.el.style.display = 'flex'; // Usaba flexbox
                 }
             });
         }
