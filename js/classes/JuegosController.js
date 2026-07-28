@@ -4,19 +4,24 @@ export class JuegosController {
         this.pantallas = document.querySelectorAll('.juego-pantalla');
         
         // Botones del menú
-        this.btnBesos = document.getElementById('btn-juego-besos');
+        this.btnRompecabezas = document.getElementById('btn-juego-rompecabezas');
         this.btnFlappy = document.getElementById('btn-juego-flappy');
         this.btnTic = document.getElementById('btn-juego-tic');
         this.btnByd = document.getElementById('btn-juego-byd');
         
+        this.contRompecabezas = document.getElementById('juego-contenedor-rompecabezas');
+        this.contFlappy = document.getElementById('juego-contenedor-flappy');
+        this.contTic = document.getElementById('juego-contenedor-tic');
+        this.contByd = document.getElementById('juego-contenedor-byd');
+
         // Botones de cerrar
         this.btnsCerrar = document.querySelectorAll('.btn-cerrar-juego');
 
-        if(this.menu) this.asignarEventos();
+        this.initEvents();
     }
 
-    asignarEventos() {
-        this.btnBesos.addEventListener('click', () => this.abrirJuego('juego-contenedor-besos'));
+    initEvents() {
+        if(this.btnRompecabezas) this.btnRompecabezas.addEventListener('click', () => this.abrirJuego('juego-contenedor-rompecabezas'));
         this.btnFlappy.addEventListener('click', () => this.abrirJuego('juego-contenedor-flappy'));
         this.btnTic.addEventListener('click', () => this.abrirJuego('juego-contenedor-tic'));
         if(this.btnByd) this.btnByd.addEventListener('click', () => this.abrirJuego('juego-contenedor-byd'));

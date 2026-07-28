@@ -224,49 +224,475 @@
     color: var(--primary-color);
 }
 
-.carrusel-fotos {
-    display: flex;
-    overflow-x: auto;
-    gap: 20px;
-    padding: 20px;
-    scroll-snap-type: x mandatory;
-    margin-top: 20px;
+/* Nuevo Museo 3D */
+.museum-3d-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 3000;
+    background: #fdfaf6; /* Fondo claro crema original */
+    display: none;
+    overflow: hidden;
 }
 
-.carrusel-fotos::-webkit-scrollbar {
-    height: 8px;
-}
-.carrusel-fotos::-webkit-scrollbar-thumb {
-    background: var(--accent-color);
-    border-radius: 10px;
+.museum-3d-overlay.active {
+    display: block;
 }
 
-.polaroid {
-    min-width: 250px;
-    height: 300px;
-    padding: 15px 15px 50px 15px;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 2px;
-    box-shadow: var(--glass-shadow);
-    scroll-snap-align: center;
+/* Nuevo contenedor para aislar la perspectiva del UI */
+.museum-viewport {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    perspective: 800px;
+    overflow: hidden;
+}
+
+
+
+.museum-camera {
+    width: 100%; height: 100%;
+    position: absolute;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    transform-origin: 50% 50% 800px;
+}
+
+.museum-3d-world {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    transform-style: preserve-3d;
+    transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+/* Paredes estilo galería romántica moderna */
+.museum-wall {
+    position: absolute;
+    background-color: #fdf5f7; /* Rosa clarito elegante */
+    /* Zócalo de madera blanca en la parte inferior, y papel tapiz arriba */
+    background-image: 
+        linear-gradient(to top, #dcb8c0 0%, #dcb8c0 100px, #ffffff 100px, #ffffff 115px, transparent 115px),
+        repeating-linear-gradient(to right, rgba(0,0,0,0.02) 0, rgba(0,0,0,0.02) 60px, transparent 60px, transparent 120px);
+    box-shadow: inset 0 0 200px rgba(0,0,0,0.12); /* Sombra para profundidad en las esquinas */
+}
+
+.wall-left, .wall-right {
+    height: 1000px;
+}
+
+.wall-floor {
+    position: absolute;
+    background-color: #c49a9e; /* Madera rosa oscuro/rojiza */
+    /* Tablones de madera yendo hacia el fondo */
+    background-image: 
+        repeating-linear-gradient(to bottom, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 3px, transparent 3px, transparent 800px),
+        repeating-linear-gradient(to right, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 3px, transparent 3px, transparent 150px);
+    box-shadow: inset 0 0 300px rgba(0,0,0,0.6); /* Sombras fuertes en las esquinas del suelo */
+}
+
+.wall-ceiling {
+    position: absolute;
+    background: #e8dadd;
+    box-shadow: inset 0 0 300px rgba(0,0,0,0.5); /* Sombra en el techo */
+}
+
+/* Cuadros en la pared */
+.museum-painting {
+    position: absolute;
+    width: 250px; height: 320px;
+    background: #fff;
+    border: 12px solid #ffb6c1; /* Marco Rose Gold / Rosa pastel */
+    box-shadow: 0 15px 30px rgba(0,0,0,0.4), 0 0 40px rgba(255,255,255,0.3); /* Sombra fuerte + brillo de luz */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    transform-style: preserve-3d;
+}
+.museum-painting:hover {
+    transform: scale(1.05) translateZ(10px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 60px rgba(255,255,255,0.6);
+}
+
+.museum-painting img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    /* Eliminamos sepia para que se vean brillantes y bonitas */
+    filter: brightness(1.05) contrast(1.05);
+}
+
+.painting-light {
+    position: absolute;
+    top: -80px; left: 50%;
+    transform: translateX(-50%);
+    width: 250px; height: 250px;
+    background: radial-gradient(ellipse at top, rgba(255,182,193,0.3) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Placa con el nombre */
+.painting-plaque {
+    position: absolute;
+    bottom: -40px; left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    padding: 6px 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    white-space: nowrap;
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: 1px solid #ffb6c1;
+}
+
+/* Interfaz del Museo */
+.museum-ui {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5000;
+}
+
+.dpad {
     display: flex;
     flex-direction: column;
+    gap: 10px;
+    align-items: center;
 }
 
-.polaroid img {
-    width: 100%;
+.dpad-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.center-row {
+    margin-top: -5px;
+}
+
+.btn-museum-nav {
+    background: rgba(255,255,255,0.9);
+    color: var(--primary-color);
+    border: 2px solid var(--accent-color);
+    padding: 12px 20px;
+    border-radius: 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: background 0.3s, transform 0.2s;
+    /* Evitar que el texto se seleccione al dar taps rápidos */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.btn-museum-nav:hover:not(:disabled) {
+    background: rgba(212,175,55,0.2);
+    transform: scale(1.05);
+}
+.btn-museum-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: #666;
+    color: #666;
+}
+
+.btn-museum-exit {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: rgba(255,71,87,0.2);
+    color: #ff4757;
+    border: 2px solid #ff4757;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 3100;
+    backdrop-filter: blur(5px);
+    transition: background 0.3s;
+}
+.btn-museum-exit:hover {
+    background: #ff4757;
+    color: white;
+}
+
+/* Foco de luz (Spotlight) */
+.frame-light {
+    position: absolute;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
     height: 200px;
-    object-fit: cover;
-    border-radius: 2px;
-    margin-bottom: 15px;
+    background: radial-gradient(ellipse at top, rgba(255,255,255,0.3) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 2;
 }
 
-.polaroid p {
+.frame-border {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.frame-border img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: sepia(0.2) contrast(1.1); /* Toque museo */
+}
+
+.frame-plaque {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(to right, #b8860b, #ffd700, #b8860b);
+    padding: 5px 15px;
+    border-radius: 3px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+
+.frame-plaque h4 {
+    color: #333;
+    font-size: 0.9rem;
     font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    color: var(--text-dark);
+    margin: 0;
+}
+
+/* Modal del Museo */
+.museum-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.museum-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.museum-modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 90%;
+    max-height: 90%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 0 30px rgba(255,255,255,0.2);
+}
+
+.museum-modal-img {
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+    border-radius: 5px;
+}
+
+.museum-modal-info {
+    margin-top: 15px;
     text-align: center;
+}
+
+.museum-modal-title {
+    font-family: 'Playfair Display', serif;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+    font-size: 1.5rem;
+}
+
+.museum-modal-desc {
+    color: #444;
+    font-size: 1rem;
+}
+
+.museum-modal-close {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+/* Frasco de Razones */
+.jar-section {
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.jar-container {
+    width: 200px;
+    height: 250px;
+    margin: 0 auto;
+    position: relative;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.magic-jar {
+    width: 120px;
+    height: 160px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 4px solid rgba(255, 255, 255, 0.5);
+    border-radius: 10px 10px 40px 40px;
+    position: relative;
+    box-shadow: inset 0 0 20px rgba(255,255,255,0.3), 0 10px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.magic-jar:hover {
+    transform: scale(1.05);
+}
+
+.shake-jar {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-2deg); }
+  20%, 80% { transform: translate3d(4px, 0, 0) rotate(2deg); }
+  30%, 50%, 70% { transform: translate3d(-6px, 0, 0) rotate(-4deg); }
+  40%, 60% { transform: translate3d(6px, 0, 0) rotate(4deg); }
+}
+
+.jar-lid {
+    position: absolute;
+    top: -20px;
+    left: -10px;
+    width: 132px;
+    height: 25px;
+    background: #c09b69; /* Corcho */
+    border-radius: 5px;
+    border: 2px solid #8b5a2b;
+}
+
+.jar-papers {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    height: 80px;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    font-size: 2rem;
+    color: #ffd700;
+}
+
+.paper-1 { transform: rotate(-15deg); }
+.paper-2 { transform: rotate(10deg); color: #ffebcd; }
+.paper-3 { transform: rotate(30deg); }
+
+.floating-heart {
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    color: #ff4757;
+    font-size: 1.5rem;
+    animation: floatHeart 3s infinite ease-in-out;
+}
+
+@keyframes floatHeart {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.8; }
+    50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+}
+
+.jar-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,215,0,0.2) 50%, transparent 70%);
+    animation: pulseGlow 2s infinite alternate;
+}
+
+@keyframes pulseGlow {
+    from { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+/* Modal del Frasco */
+.jar-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.jar-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.jar-modal-content {
+    background: linear-gradient(135deg, #fff9e6, #fff);
+    padding: 40px 30px;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 80%;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border: 2px solid #ffd700;
+}
+
+.jar-modal-content h3 {
+    color: #c09b69;
+    font-family: 'Playfair Display', serif;
+    margin-bottom: 20px;
+}
+
+.jar-razon-texto {
+    font-size: 1.2rem;
+    color: #444;
+    font-style: italic;
+    line-height: 1.6;
+}
+
+.jar-modal-heart {
+    color: #ff4757;
+    font-size: 2rem;
+    margin-top: 20px;
+    animation: heartbeat 1.5s infinite;
+}
+
+.jar-modal-close {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #888;
+    cursor: pointer;
 }
 
 @media (max-width: 768px) {

@@ -6,6 +6,8 @@ export class EspejoMagico {
         this.canvas = document.getElementById('canvas-espejo');
         this.btnCerrar = document.getElementById('btn-cerrar-espejo');
         this.loading = document.getElementById('espejo-loading');
+        this.btnToggleEfectos = document.getElementById('btn-toggle-efectos');
+        this.canvas3D = document.getElementById('canvas-3d-container');
         
         if (!this.video || !this.canvas) return;
         
@@ -15,6 +17,7 @@ export class EspejoMagico {
         this.particles = [];
         this.lastVideoTime = -1;
         this.running = false;
+        this.efectosOcultos = false;
         
         // Formas disponibles (corazones, estrellas, flores)
         this.shapes = ['heart', 'star', 'flower'];
@@ -23,6 +26,23 @@ export class EspejoMagico {
     }
 
     initBtnEvent() {
+        if (this.btnToggleEfectos) {
+            this.btnToggleEfectos.addEventListener('click', () => {
+                this.efectosOcultos = !this.efectosOcultos;
+                if (this.efectosOcultos) {
+                    this.canvas.style.display = 'none';
+                    if (this.canvas3D) this.canvas3D.style.display = 'none';
+                    this.btnToggleEfectos.innerHTML = '<i class="fas fa-eye"></i> <span>Efectos</span>';
+                    this.btnToggleEfectos.classList.add('active');
+                } else {
+                    this.canvas.style.display = 'block';
+                    if (this.canvas3D) this.canvas3D.style.display = 'block';
+                    this.btnToggleEfectos.innerHTML = '<i class="fas fa-eye-slash"></i> <span>Limpiar</span>';
+                    this.btnToggleEfectos.classList.remove('active');
+                }
+            });
+        }
+
         document.getElementById('btn-nav-espejo').addEventListener('click', async (e) => {
             e.preventDefault();
             // Cerrar otras vistas
@@ -176,6 +196,11 @@ export class EspejoMagico {
 
     async renderLoop() {
         if (!this.running) return;
+
+        if (this.efectosOcultos) {
+            requestAnimationFrame(() => this.renderLoop());
+            return;
+        }
 
         // Limpiar canvas de partículas 2D (el video se renderiza por CSS/hardware GPU)
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

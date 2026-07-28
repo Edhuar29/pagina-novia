@@ -1,4 +1,4 @@
-import cancionUrl from '../../assets/Ojitos Lindos.mp3';
+const cancionUrl = 'assets/Ojitos Lindos.mp3';
 
 export class ReproductorMusical {
     constructor() {

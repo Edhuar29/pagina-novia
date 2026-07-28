@@ -6,11 +6,13 @@ import { Navegacion } from './classes/Navegacion.js';
 import { JuegosController } from './classes/JuegosController.js';
 import { JuegoTicTacToe } from './classes/JuegoTicTacToe.js';
 import { JuegoFlappyCorazon } from './classes/JuegoFlappyCorazon.js';
-import { JuegoAtrapaBesos } from './classes/JuegoAtrapaBesos.js';
+import { JuegoRompecabezas } from './classes/JuegoRompecabezas.js';
 import { JuegoViajeBYD } from './classes/JuegoViajeBYD.js';
 import { ThemeController } from './classes/ThemeController.js';
 import { ArbolCorazones } from './classes/ArbolCorazones.js';
 import { EspejoMagico } from './classes/EspejoMagico.js';
+import { MuseoRecuerdos } from './classes/MuseoRecuerdos.js';
+import { FrascoRazones } from './classes/FrascoRazones.js';
 
 // Cuando la página termine de cargar, inicializamos nuestras clases
 document.addEventListener('DOMContentLoaded', () => {
@@ -35,18 +37,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializar el sobre interactivo (raspadita)
     const sobre = new BoletoSorpresa();
 
+    // Inicializar Museo y Frasco
+    const museo = new MuseoRecuerdos();
+    const frasco = new FrascoRazones();
+
     // Inicializar Control de Juegos y los Minijuegos
     const controlJuegos = new JuegosController();
     const ticTacToe = new JuegoTicTacToe();
     const flappy = new JuegoFlappyCorazon();
+    const rompecabezas = new JuegoRompecabezas();
+    const byd = new JuegoViajeBYD();
 
     // Inicializar Árbol de Corazones
     const arbol = new ArbolCorazones('sakuraCanvas', '2026-07-10T00:00:00'); 
     const espejoMagico = new EspejoMagico();
 
     console.log("Aplicación iniciada correctamente.");
-
-    const besos = new JuegoAtrapaBesos();
-    const byd = new JuegoViajeBYD();
-
 });
