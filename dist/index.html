@@ -12,8 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-  <script type="module" crossorigin src="./assets/index-I5seZ6Dv.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-BUMZtlud.css">
+  <script type="module" crossorigin src="./assets/index-DuH2MDeu.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-c0Pa_1_e.css">
 </head>
 <body>
     <div class="patron-fondo"></div>
@@ -103,33 +103,33 @@
                 </div>
             </section>
 
-            <section class="timeline-section" id="historia">
-                <h2 class="section-title">Nuestros Momentos</h2>
-                <div class="carrusel-fotos">
-                    <div class="polaroid glass">
-                        <img src="./assets/botes-yQefyBK1.jpg" alt="Foto 1">
-                        <p>Dìa de novios ✨</p>
-                    </div>
-                    <div class="polaroid glass">
-                        <img src="./assets/vosandes-BJ07Zlme.jpg" alt="Foto 2">
-                        <p>cita al doctor  ☕</p>
-                    </div>
-                    <div class="polaroid glass">
-                        <img src="./assets/epn-z0BwPmf-.jpg" alt="Foto 3">
-                        <p>EPN</p>
-                    </div>
-                    <div class="polaroid glass">
-                        <img src="./assets/biblioteca-CZv5I32G.jpg" alt="Foto 4">
-                        <p>clases virtuales</p>
-                    </div>
+            <section class="museum-section" id="historia">
+                <h2 class="section-title">Museo de Recuerdos</h2>
+                <p class="section-subtitle">Nuestra historia de amor en exhibición</p>
+                <div style="text-align: center; padding: 20px;">
+                    <button id="btn-entrar-museo" class="btn-jugar" style="font-size: 1.2rem; padding: 15px 30px;">
+                        <i class="fas fa-door-open"></i> Entrar al Museo
+                    </button>
                 </div>
             </section>
 
-            <section class="video-section" id="razones-video" style="margin-top: 30px; text-align: center;">
-                <h2 class="section-title">Razones por las que te amo ❤️</h2>
-                <div class="video-container glass" style="padding: 10px; border-radius: 15px; overflow: hidden;">
-                    <!-- Placeholder, el iframe se inserta por JS o directamente aquí -->
-                    <iframe width="100%" height="250" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Razones por las que te amo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border-radius: 10px;"></iframe>
+            <section class="jar-section" id="razones-frasco">
+                <h2 class="section-title">El Frasco de las Razones ❤️</h2>
+                <p class="section-subtitle">Tócalo para descubrir por qué te amo</p>
+                
+                <div class="jar-container glass">
+                    <div class="magic-jar" id="magic-jar">
+                        <div class="jar-lid"></div>
+                        <div class="jar-body">
+                            <div class="jar-papers">
+                                <i class="fas fa-scroll paper-1"></i>
+                                <i class="fas fa-scroll paper-2"></i>
+                                <i class="fas fa-scroll paper-3"></i>
+                                <i class="fas fa-heart floating-heart"></i>
+                            </div>
+                        </div>
+                        <div class="jar-glow"></div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -164,9 +164,9 @@
                 <p class="section-subtitle">Divirtámonos un rato 🎮</p>
                 
                 <div class="juegos-menu">
-                    <div class="juego-card arcade-card" id="btn-juego-besos">
-                        <i class="fas fa-kiss-wink-heart"></i>
-                        <h3>Atrapa Besos</h3>
+                    <div class="juego-card arcade-card" id="btn-juego-rompecabezas">
+                        <i class="fas fa-puzzle-piece"></i>
+                        <h3>Rompecabezas</h3>
                     </div>
                     <div class="juego-card arcade-card" id="btn-juego-flappy">
                         <i class="fas fa-heartbeat"></i>
@@ -183,13 +183,18 @@
                 </div>
 
                 <!-- Contenedores de juegos (ocultos por defecto) -->
-                <div id="juego-contenedor-besos" class="juego-pantalla glass" style="display: none;">
-                    <h3>Atrapa los Besos 💋</h3>
-                    <p class="juego-instrucciones">Mueve la cesta con el dedo o el mouse para atrapar corazones. Tienes 30 segundos.</p>
-                    <button class="btn-jugar" id="start-besos">Jugar</button>
-                    <div class="puntuacion">Puntos: <span id="puntos-besos">0</span> | Tiempo: <span id="tiempo-besos">30</span></div>
-                    <div id="canvas-besos-container" style="position:relative; width: 100%; height: 300px; background:#fff; overflow:hidden; border-radius:10px; margin-top:10px; display:none;">
+                <div id="juego-contenedor-rompecabezas" class="juego-pantalla glass" style="display: none;">
+                    <h3>Rompecabezas de Recuerdos 🧩</h3>
+                    <p class="juego-instrucciones">Toca dos piezas para intercambiarlas de lugar y formar la foto.</p>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px;">
+                        <button class="btn-jugar" id="start-rompecabezas">Jugar (Aleatoria)</button>
+                        <button class="btn-jugar" id="btn-cambiar-foto-puzzle" style="background: #2ed573;">Cambiar Foto 🔄</button>
                     </div>
+                    <div class="puntuacion">Movimientos: <span id="movimientos-puzzle">0</span></div>
+                    <div id="puzzle-board" style="display:none; position:relative; width: 100%; max-width: 300px; aspect-ratio: 1/1; background:#eee; margin: 15px auto; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                        <!-- Las piezas se inyectan por JS -->
+                    </div>
+                    <p id="puzzle-mensaje-exito" style="display:none; color: var(--primary-color); font-weight: bold; margin-top: 10px;"></p>
                     <button class="btn-cerrar-juego" style="margin-top:15px;">Cerrar Juego</button>
                 </div>
 
@@ -268,9 +273,16 @@
                     <input type="color" id="espejo-color" value="#ff4757">
                 </div>
                 <div class="espejo-botones-group">
-                    <button id="btn-anim-espejo" class="btn-espejo-action"><i class="fas fa-pause"></i> <span>Pausar</span></button>
+                    <button id="btn-limpiar-ui" class="btn-espejo-action"><i class="fas fa-expand"></i> <span>Modo Limpio</span></button>
                     <button id="btn-cerrar-espejo" class="btn-espejo-exit"><i class="fas fa-times"></i> <span>Salir</span></button>
                 </div>
+            </div>
+
+            <!-- Controles tipo cámara móvil -->
+            <div id="camera-controls" class="camera-controls">
+                <button id="btn-switch-camera" class="camera-btn secondary-btn" aria-label="Girar cámara"><i class="fas fa-sync-alt"></i></button>
+                <button id="btn-take-photo" class="camera-btn capture-btn" aria-label="Tomar foto"><div class="capture-inner"></div></button>
+                <div class="camera-spacer"></div>
             </div>
 
             <div style="position: relative; width: 100%; height: 100%; overflow: hidden; background: #000;">
