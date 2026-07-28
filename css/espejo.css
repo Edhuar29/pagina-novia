@@ -192,8 +192,10 @@
 }
 
 /* Modo limpio */
-.ui-hidden .espejo-panel,
-.ui-hidden .camera-controls,
-.ui-hidden .music-player {
+body.ui-hidden .espejo-panel,
+body.ui-hidden .camera-controls,
+body.ui-hidden .music-player,
+body.ui-hidden #canvas-espejo,
+body.ui-hidden #canvas-3d-container {
     display: none !important;
 }

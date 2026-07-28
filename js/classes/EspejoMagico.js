@@ -31,14 +31,14 @@ export class EspejoMagico {
     initBtnEvent() {
         if (this.btnLimpiarUI) {
             this.btnLimpiarUI.addEventListener('click', () => {
-                document.getElementById('vista-espejo').classList.add('ui-hidden');
+                document.body.classList.add('ui-hidden');
             });
         }
         
         // Restaurar UI al tocar la pantalla limpia
         document.getElementById('vista-espejo').addEventListener('click', (e) => {
             if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I' && !e.target.closest('.espejo-panel') && !e.target.closest('.camera-controls')) {
-                document.getElementById('vista-espejo').classList.remove('ui-hidden');
+                document.body.classList.remove('ui-hidden');
             }
         });
 
@@ -223,6 +223,7 @@ export class EspejoMagico {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.particles = [];
         this.resize();
+        document.body.classList.remove('ui-hidden');
     }
 
     resize() {
