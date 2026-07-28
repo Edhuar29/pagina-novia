@@ -12,8 +12,8 @@ export class ParticleSystem3D {
         this.lastPosition = { x: 0, y: 0 }; // Para inercia/trails
         this.targetRotation = { x: 0, y: 0 };
         this.currentRotation = { x: 0, y: 0 };
-        this.targetScale = 1.0;
-        this.currentScale = 1.0;
+        this.targetScale = 0.0;
+        this.currentScale = 0.0;
         this.currentPattern = 'sphere';
         
         this.initThree();
@@ -193,8 +193,8 @@ export class ParticleSystem3D {
 
     updateHands(landmarksArray, videoWidth = 1280, videoHeight = 720) {
         if (!landmarksArray || landmarksArray.length === 0) {
-            // Regresar al tamaño normal si no hay manos, pero mantener la rotación actual
-            this.targetScale = 1.0;
+            // Desaparecer la figura cuando no se detecta ninguna mano
+            this.targetScale = 0.0;
             return;
         }
 
